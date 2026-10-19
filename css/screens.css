@@ -425,3 +425,46 @@
   .stars-big { font-size: 2.2rem; }
   .tally { grid-template-columns: auto auto auto auto; gap: 2px 12px; }
 }
+
+/* ---------- Sprig's hat ---------- */
+.sprig-hat { position: absolute; left: 50%; top: -0.42em; transform: translateX(-50%) rotate(-8deg); font-size: 0.48em; line-height: 1; }
+
+/* ---------- Title player chip ---------- */
+.title-top { justify-content: flex-start; }
+.title-top-gap { flex: 1; }
+.player-chip { max-width: 50vw; overflow: hidden; text-overflow: ellipsis; }
+
+/* ---------- Players ---------- */
+.players { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 220px), 1fr)); gap: 12px; align-content: start; }
+.player-card { position: relative; display: flex; flex-direction: column; align-items: stretch; padding: 0; overflow: hidden; }
+.player-card.current { box-shadow: inset 0 0 0 3px var(--sand), 0 12px 30px rgba(2, 12, 18, 0.35); }
+.player-main, .player-add { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 18px 12px; width: 100%; }
+.player-emoji { font-size: 2.8rem; line-height: 1.1; }
+.player-name { font-family: var(--font-display); font-size: var(--step-1); }
+.player-meta { color: var(--mist); font-weight: 800; }
+.player-remove { position: absolute; top: 6px; right: 6px; width: 36px; height: 36px; border-radius: 12px; background: var(--well); color: var(--mist); }
+.name-input {
+  font: inherit; font-size: var(--step-1); color: var(--foam);
+  padding: 10px 14px; border-radius: 14px; border: 0;
+  background: var(--well-strong); box-shadow: inset 0 0 0 2px var(--panel-line);
+}
+.name-input:focus { outline: 3px solid var(--sand); }
+.emoji-picks { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; }
+.emoji-pick { width: 48px; height: 48px; border-radius: 14px; background: var(--well); font-size: 1.6rem; }
+.emoji-pick.on { background: var(--sand); }
+
+/* ---------- Shop ---------- */
+.shop { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 170px), 1fr)); gap: 12px; align-content: start; }
+.shop-card { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 14px 10px; }
+.shop-card.current { box-shadow: inset 0 0 0 3px var(--kelp); }
+.shop-emoji { font-size: 2.6rem; line-height: 1.1; }
+.shop-name { font-weight: 900; }
+
+/* ---------- Map: more extras, longer worlds ---------- */
+.map-extras { grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr)); }
+.path:has(> :nth-child(6)) .node { width: 44px; height: 44px; font-size: 1.15rem; }
+.path:has(> :nth-child(6))::before { left: 22px; right: 22px; top: 36px; }
+@media (max-width: 520px) {
+  .path:has(> :nth-child(6)) .node { width: 38px; height: 38px; font-size: 1rem; }
+  .path:has(> :nth-child(6))::before { top: 33px; }
+}

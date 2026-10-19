@@ -81,16 +81,46 @@ function dedupe(cards) {
 }
 
 // Wrong answers for multiple choice: try the "tempting" candidates first, then pad with near misses.
-export function distractors(answer, candidates, count = 3) {
+export function distractors(answer, candidates, count = 3, { negative = false } = {}) {
+  const ok = c => Number.isInteger(c) && (negative || c > 0) && c !== answer;
   const out = [];
   for (const c of candidates) {
-    if (Number.isInteger(c) && c > 0 && c !== answer && !out.includes(c)) out.push(c);
+    if (ok(c) && !out.includes(c)) out.push(c);
     if (out.length === count) return out;
   }
   for (let k = 1; out.length < count; k++) {
     for (const c of [answer + k, answer - k]) {
-      if (c > 0 && c !== answer && !out.includes(c) && out.length < count) out.push(c);
+      if (ok(c) && !out.includes(c) && out.length < count) out.push(c);
     }
   }
   return out;
+}
+
+// Rules for the "pick" puzzle (tap every even number, every multiple of 5 …).
+export function pickTest(rule, k) {
+  if (rule === 'even') return v => v % 2 === 0;
+  if (rule === 'odd') return v => Math.abs(v % 2) === 1;
+  return v => v % k === 0;
+}
+
+export function pickLabel(rule, k) {
+  if (rule === 'even') return 'even number';
+  if (rule === 'odd') return 'odd number';
+  return `multiple of ${k}`;
+}
+
+// Numbers as children read them: a real minus sign for negatives.
+export const fmt = n => (n < 0 ? `−${-n}` : `${n}`);
+
+// Rule cards written as an nth-term formula, e.g. "Pool n has 3n + 1".
+export function nthCards(s) {
+  const formula = (m, c) => {
+    const mn = m === 1 ? 'n' : `${m}n`;
+    return c === 0 ? mn : c > 0 ? `${mn} + ${c}` : `${mn} − ${-c}`;
+  };
+  const d = s.d, c = s.a - s.d;
+  const right = formula(d, c);
+  const wrong = [formula(d, s.a), `n + ${d}`, formula(d + 1, c - 1), formula(d, 0), formula(d, c + 1)]
+    .filter((t, i, all) => t !== right && all.indexOf(t) === i);
+  return [{ text: `Pool n has ${right}`, correct: true }, ...wrong.slice(0, 3).map(t => ({ text: `Pool n has ${t}`, correct: false }))];
 }

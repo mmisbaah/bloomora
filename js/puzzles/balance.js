@@ -1,6 +1,7 @@
 // A balance scale with mystery creatures. Guess one creature's weight and watch the beam tip.
 import { h } from '../core/dom.js';
 import { numpad } from '../core/numpad.js';
+import { why } from '../core/explain.js';
 
 const sideText = (s, c) => [s.x && `${s.x} × ${c}`, s.k && `${s.k} 🐚`].filter(Boolean).join(' + ');
 
@@ -9,6 +10,7 @@ export default {
   name: 'Lagoon Scales',
   prompt: r => `How many shells does one ${r.critter} weigh?`,
   say: () => 'Type a weight and watch the scale. Level beam means you got it!',
+  nudge: () => 'Try any guess and watch which way the scale tips.',
   hint(r) {
     const { left: L, right: R } = r;
     const steps = [];
@@ -20,6 +22,7 @@ export default {
   },
   mount(root, r, api) {
     const { left: L, right: R } = r;
+    const Rt = R;
     const answer = (R.k - L.k) / (L.x - R.x);
 
     const load = s => h('div', { class: 'pan-load' },
@@ -54,6 +57,12 @@ export default {
         } else {
           const heavier = lw > rw ? 'left' : 'right';
           api.wrong(`With ${g}, the ${heavier} side sinks. Try a ${lw > rw ? 'lighter' : 'heavier'} ${r.critter}.`);
+          const side = (s, w) => [s.x && `${s.x} × ${g}`, s.k && `${s.k}`].filter(Boolean).join(' + ') + ` = ${w}`;
+          api.showWhy(why(`If one ${r.critter} weighs ${g} shells…`,
+            h('div', { class: 'xs-sides' },
+              h('span', { class: lw > rw ? 'xs-heavy' : '' }, 'Left: ', side(L, lw)),
+              h('span', { class: rw > lw ? 'xs-heavy' : '' }, 'Right: ', side(Rt, rw))),
+            h('p', {}, `The sides need to be equal. Try a ${lw > rw ? 'smaller' : 'bigger'} number.`)));
           pad.clear();
         }
       },

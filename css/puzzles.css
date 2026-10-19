@@ -335,3 +335,93 @@ button.stone:hover:not(:disabled) { transform: translateY(-3px); }
   .t-tri-row i { width: 8px; height: 8px; }
   .t-squares { width: calc(var(--n) * 9px + (var(--n) - 1) * 2px); }
 }
+
+/* ---------- "Show me why" panel ---------- */
+.explain {
+  display: flex; flex-direction: column; gap: 8px;
+  padding: 10px 12px; border-radius: 14px;
+  background: rgba(246, 214, 139, 0.1); box-shadow: inset 0 0 0 2px var(--sand);
+}
+.explain-title { font-weight: 900; color: var(--sand); }
+.explain p { font-size: var(--step-0); }
+.xs-strip { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 4px 2px; }
+.xs-stone {
+  display: inline-flex; flex-direction: column; align-items: center;
+  min-width: 52px; padding: 4px 8px; border-radius: 12px;
+  background: var(--panel-solid); font-family: var(--font-display); font-size: 1.3rem; line-height: 1.1;
+}
+.xs-pool { font-family: var(--font-body); font-size: 0.8rem; color: var(--mist); font-weight: 800; }
+.xs-q { color: var(--sand); box-shadow: inset 0 0 0 2px var(--sand); }
+.xs-jump { display: inline-flex; flex-direction: column; align-items: center; font-weight: 900; color: var(--kelp); min-width: 34px; font-size: 1rem; }
+.xs-arrow { color: var(--mist); line-height: 1; }
+.xs-mark { color: var(--danger); }
+.xs-groups { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; align-items: center; }
+.xs-group { padding: 4px 10px; border-radius: 12px; background: var(--panel-solid); box-shadow: inset 0 0 0 2px var(--kelp); font-size: 1.3rem; }
+.xs-more { color: var(--mist); font-size: 1.4rem; }
+.xs-sides { display: flex; flex-wrap: wrap; gap: 8px 18px; justify-content: center; font-weight: 900; font-size: var(--step-0); }
+.xs-heavy { color: var(--danger); }
+.xs-line { position: relative; height: 54px; margin: 0 8px; border-bottom: 3px solid var(--mist); }
+.xs-dot {
+  position: absolute; bottom: -14px; transform: translateX(-50%);
+  min-width: 34px; padding: 2px 6px; border-radius: 10px; text-align: center;
+  background: var(--sand); color: var(--ink); font-family: var(--font-display); font-size: 1.1rem;
+}
+.xs-end { position: absolute; bottom: -26px; left: 0; color: var(--mist); font-size: 0.9rem; font-weight: 800; }
+.xs-end--r { left: auto; right: 0; }
+.cell.example { box-shadow: 0 0 0 3px var(--sand), 0 0 18px var(--sand) !important; animation: pulseCell 0.8s ease-in-out infinite alternate; }
+@keyframes pulseCell { from { transform: scale(0.92); } to { transform: scale(1.04); } }
+
+/* ---------- Twin currents ---------- */
+.twins { display: flex; flex-direction: column; gap: 10px; align-items: center; }
+.twin-row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; justify-content: center; }
+.twin-label { font-weight: 900; color: var(--mist); min-width: 70px; text-align: right; }
+.twin-stone { min-width: 56px; height: 56px; font-size: 1.35rem; }
+.twin-row:last-child .twin-stone { background: radial-gradient(circle at 35% 30%, #dff7ea, var(--kelp) 60%, var(--kelp-deep)); }
+
+/* ---------- Number net ---------- */
+.net { display: grid; grid-template-columns: repeat(4, minmax(0, 92px)); gap: 10px; justify-content: center; }
+.net-fish {
+  display: flex; flex-direction: column; align-items: center; gap: 2px;
+  padding: 8px 4px; border-radius: 16px;
+  background: var(--well-strong); box-shadow: 0 4px 0 rgba(2, 12, 18, 0.5), inset 0 0 0 2px var(--panel-line);
+}
+.net-icon { font-size: 1.3rem; line-height: 1; }
+.net-num { font-family: var(--font-display); font-size: 1.6rem; color: var(--sand); line-height: 1; }
+.net-fish.on { background: var(--kelp); box-shadow: 0 4px 0 var(--kelp-deep); }
+.net-fish.on .net-num { color: var(--ink); }
+.net-fish.oops { background: var(--danger) !important; }
+
+/* Number pad ± key spans the bottom row. */
+.np-key--sign { grid-column: 1 / -1; color: var(--sand); }
+@media (max-width: 520px), (max-height: 640px) {
+  .net { grid-template-columns: repeat(4, minmax(0, 76px)); gap: 8px; }
+  .net-num { font-size: 1.35rem; }
+  .xs-stone { min-width: 44px; font-size: 1.1rem; padding: 3px 6px; }
+}
+/* Readable minimums for the why panel and twin labels. */
+.xs-pool { font-size: 0.9rem; }
+.twin-label { font-size: 1rem; }
+.explain-title { font-size: 1rem; }
+@media (max-height: 640px) {
+  .xs-pool { display: none; }
+  .explain { padding: 6px 10px; gap: 4px; }
+  .explain p { font-size: 1rem; }
+  .twin-stone { min-width: 48px; height: 48px; font-size: 1.2rem; }
+  .twins { gap: 6px; }
+}
+@media (max-height: 640px) and (min-width: 640px) {
+  .puzzle--twins .fit { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); align-items: center; gap: 12px; }
+  .puzzle--twins .explain { grid-column: 1 / -1; }
+  .puzzle--twins .cards { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .puzzle--pick .fit { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); align-items: center; gap: 12px; }
+  .puzzle--pick .explain { grid-column: 2; grid-row: 1; }
+  .puzzle--pick .mirror-actions { grid-column: 1; }
+}
+/* Twin rows must stay lined up (each bottom number directly under its top number), so they never wrap. */
+.twin-row { display: grid; grid-template-columns: auto repeat(var(--count, 5), minmax(0, 56px)); gap: 6px; flex-wrap: nowrap; }
+.twin-stone { min-width: 0; width: 100%; aspect-ratio: 1; height: auto; padding: 0; }
+@media (max-width: 520px) {
+  .twin-label { min-width: 0; font-size: 0.95rem; }
+  .twin-row { gap: 5px; grid-template-columns: auto repeat(var(--count, 5), minmax(0, 52px)); }
+  .twin-stone { font-size: 1.15rem; }
+}

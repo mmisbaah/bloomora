@@ -2,6 +2,7 @@
 import { h, shuffle } from '../core/dom.js';
 import { audio } from '../core/audio.js';
 import { numpad } from '../core/numpad.js';
+import { why } from '../core/explain.js';
 
 export function ruleLabel(m, b) {
   const parts = [];
@@ -16,6 +17,7 @@ export default {
   name: 'Current Machine',
   prompt: r => (r.inverse ? 'What number went into the machine?' : 'What number comes out of the machine?'),
   say: r => (r.inverse ? 'This time you know what came out. Work backwards!' : 'Every number goes through the same secret rule.'),
+  nudge: () => 'Compare In and Out on each row. What happens to every number?',
   hint(r) {
     if (r.inverse) {
       const steps = [];
@@ -52,6 +54,13 @@ export default {
           else api.correct(`Yes! The machine's rule is ${ruleLabel(r.m, r.b)}.`);
         } else {
           api.wrong(`${v} isn't right. Test your rule on every row above.`);
+          // Show how Out changes when In changes: the multiplier hides in that ratio.
+          const ex = r.examples;
+          api.showWhy(why('Watch how Out changes when In changes',
+            h('div', { class: 'xs-sides' }, ex.slice(1).map((x, i) => {
+              const dIn = x - ex[i], dOut = f(x) - f(ex[i]);
+              return h('span', {}, `In +${dIn} → Out +${dOut}`);
+            }))));
           pad.clear();
         }
       },

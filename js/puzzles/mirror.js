@@ -7,6 +7,7 @@ export default {
   name: 'Mirror Pool',
   prompt: r => (r.axis === 'h' ? 'Reflect the tiles across the water line' : 'Reflect the tiles across the mirror line'),
   say: () => 'Tap tiles on the empty side to make a perfect reflection, then press Check.',
+  nudge: () => 'Start with the tiles that touch the line.',
   hint: () => 'Count steps from the line. A tile 1 step from the line on one side lands 1 step from it on the other.',
   mount(root, r, api) {
     const axis = r.axis || 'v';
@@ -73,6 +74,14 @@ export default {
       if (missing) bits.push(`${missing} tile${missing > 1 ? 's' : ''} missing`);
       if (extra) bits.push(`${extra} in the wrong place`);
       api.wrong(`Almost: ${bits.join(', ')}. Count steps from the line.`);
+      // Point out one missing tile as a worked example, not all of them.
+      const example = [...expected].find(k => !chosen.has(k));
+      if (example) {
+        const cell = cells.get(example);
+        cell.classList.add('example');
+        setTimeout(() => cell.classList.remove('example'), 2500);
+        api.showWhy(why('Here’s one you missed (it’s glowing). It’s the same number of steps from the line as its partner.'));
+      }
     }
 
     root.append(

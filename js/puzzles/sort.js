@@ -1,6 +1,7 @@
 // Tap the swimmers in order to line them up.
 import { h, shuffle, replay } from '../core/dom.js';
 import { audio } from '../core/audio.js';
+import { why } from '../core/explain.js';
 
 const ordered = r => [...r.values].sort((a, b) => (r.desc ? b - a : a - b));
 
@@ -9,6 +10,7 @@ export default {
   name: 'Line-Up',
   prompt: r => (r.desc ? 'Tap them from the biggest number to the smallest' : 'Tap them from the smallest number to the biggest'),
   say: r => `These ${r.critterName || 'turtles'} want to swim in order.`,
+  nudge: r => `Which number is the ${r.desc ? 'biggest' : 'smallest'}?`,
   hint: r => `Start with ${ordered(r)[0]}, then look for the next ${r.desc ? 'smaller' : 'bigger'} number.`,
   mount(root, r, api) {
     const order = ordered(r);
@@ -40,6 +42,13 @@ export default {
       } else {
         replay(b, 'shake');
         api.wrong(`${v} isn't next. Find the ${r.desc ? 'biggest' : 'smallest'} number still waiting.`);
+        // A number line: where each waiting number sits shows which comes next.
+        const left = start.filter(x => !order.slice(0, pos).includes(x));
+        const top = Math.max(...r.values);
+        api.showWhy(why('Smaller numbers sit further left on the number line',
+          h('div', { class: 'xs-line' }, h('span', { class: 'xs-end' }, '0'),
+            left.map(x => h('span', { class: 'xs-dot', style: { left: `${6 + (x / top) * 86}%` } }, x)),
+            h('span', { class: 'xs-end xs-end--r' }, top))));
       }
     }
 

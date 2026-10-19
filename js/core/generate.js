@@ -3,7 +3,11 @@
 // structure) with new numbers, positions, creatures and pictures. Every candidate is checked
 // against limits taken from the template and the age band, and the template itself is the
 // fallback, so a generated round is never harder than its band allows.
-import { seqFn } from './sequences.js';
+import { seqFn, pickTest } from './sequences.js';
+
+// Difficulty nudge for the round being generated: -1 gentler, 0 as designed, +1 harder.
+// Set by vary() for each call so the helpers below can read it.
+let EASE = 0;
 
 // Seeded PRNG (mulberry32) so a whole level can be reproduced from one number.
 export function makeRng(seed = (Date.now() ^ Math.floor(Math.random() * 2 ** 31)) >>> 0) {
@@ -83,10 +87,12 @@ function slides(s) {
 
 function place(c, r, R) {
   // Hand-written cards use n-formulas, which hold for any starting pool.
-  if (slides(c.seq) || c.cards) c.from = int(R, 1, r.from + 3);
+  if (slides(c.seq) || c.cards || c.nth) c.from = int(R, 1, r.from + 3);
   if (c.type === 'predict') {
     const jump = r.ask - (r.from + r.show - 1);
-    c.ask = c.from + c.show - 1 + int(R, Math.max(1, jump - 1), jump + 1);
+    const lo = EASE < 0 ? Math.max(1, jump - 2) : EASE > 0 ? jump : Math.max(1, jump - 1);
+    const hi = EASE < 0 ? Math.max(1, jump - 1) : EASE > 0 ? jump + 2 : jump + 1;
+    c.ask = c.from + c.show - 1 + int(R, lo, hi);
   }
   if (c.type === 'missing') c.gap = int(R, c.from + 1, c.from + c.count - 2);
 }
@@ -98,7 +104,7 @@ function brokenStone(c, f, R) {
   const shown = values(f, span(c));
   const jump = Math.abs(real - f(at - 1)) || 1;
   const sizes = [...new Set([1, 2, 3, Math.ceil(jump / 2)])];
-  const options = sizes.flatMap(k => [real + k, real - k]).filter(v => v >= 1 && !shown.includes(v));
+  const options = sizes.flatMap(k => [real + k, real - k]).filter(v => (c.negative || v >= 1) && !shown.includes(v));
   return options.length ? { at, value: pickR(R, options) } : null;
 }
 
@@ -117,9 +123,12 @@ function buildFits(c, f, r) {
 function varySeq(r, R, band) {
   const f0 = seqFn(r.seq);
   const vals0 = values(f0, span(r));
-  const max0 = Math.max(...vals0);
+  const max0 = Math.max(...vals0.map(Math.abs));
   const step = r.seq.kind === 'arith' ? Math.abs(r.seq.d) : 0;
-  const cap = Math.min(Math.max(max0 * GROWTH[r.type], max0 + 3 * step), Math.max(capFor(r, band), max0));
+  // Gentler rounds never grow past the template; harder ones may grow further.
+  const growth = EASE < 0 ? 1 : EASE > 0 ? GROWTH[r.type] * 1.4 : GROWTH[r.type];
+  const extra = EASE < 0 ? 0 : 3 * step;
+  const cap = Math.min(Math.max(max0 * growth, max0 + extra), Math.max(capFor(r, band), max0));
 
   // Collect distinct valid candidates, then pick one evenly, so tight templates still alternate.
   const found = new Map();
@@ -128,7 +137,8 @@ function varySeq(r, R, band) {
     place(c, r, R);
     const f = seqFn(c.seq);
     const vals = values(f, span(c));
-    if (vals.some(v => !Number.isInteger(v) || v < 1) || Math.max(...vals) > cap) continue;
+    if (vals.some(v => !Number.isInteger(v) || (!c.negative && v < 1)) || Math.max(...vals.map(Math.abs)) > cap) continue;
+    if (c.negative && !vals.some(v => v < 0)) continue; // a "below zero" round must actually go below zero
     if (c.type === 'build' && !buildFits(c, f, r)) continue;
     if (c.type === 'oddOne') {
       c.bad = brokenStone(c, f, R);
@@ -200,7 +210,8 @@ function varyBalance(r, R, band) {
   // Keep the equation's shape: the same number of creatures on each side, and loose shells
   // only where the template had them. One-step stays one-step, both-sides stays both-sides.
   const { left: L, right: Rt } = r;
-  const wMax = band === 'turtles' ? 10 : 12;
+  const base = band === 'turtles' ? 10 : 12;
+  const wMax = EASE < 0 ? Math.min(base, 6) : EASE > 0 ? base + 3 : base;
   for (let tries = 0; tries < 40; tries++) {
     const w = int(R, 2, wMax);
     const lk = L.k ? int(R, 1, 9) : 0;
@@ -222,7 +233,7 @@ function varyMachine(r, R) {
   for (let tries = 0; tries < 40; tries++) {
     const b = r.b === 0 ? 0 : Math.sign(r.b) * int(R, 1, Math.max(5, Math.abs(r.b) + 3));
     const inputs = shuffleR(R, [0, 1, 2, 3, 4, 5, 6, 7].filter(x => x >= lo)).slice(0, 3).sort((x, y) => x - y);
-    const ask = int(R, inputs[2] + 2, inputs[2] + 7);
+    const ask = EASE < 0 ? int(R, inputs[2] + 1, inputs[2] + 3) : EASE > 0 ? int(R, inputs[2] + 4, inputs[2] + 10) : int(R, inputs[2] + 2, inputs[2] + 7);
     const f = x => r.m * x + b;
     if ([...inputs, ask].some(x => f(x) < 1) || f(ask) > cap) continue;
     return { ...r, b, examples: inputs, ask };
@@ -257,16 +268,46 @@ function varyMirror(r, R) {
   return r;
 }
 
+// ---------- Twin currents (comparing two patterns) ----------
+
+function varyTwins(r, R, band) {
+  // Two "add" rules from 0, one a whole-number multiple of the other (Common Core 5.OA.B.3).
+  const aMax = band === 'orcas' ? 7 : 5;
+  const ks = r.ks || [2, 3];
+  for (let tries = 0; tries < 20; tries++) {
+    const c = { ...r, a: int(R, 1, aMax), k: pickR(R, ks) };
+    if (!same(c, r)) return c;
+  }
+  return r;
+}
+
+// ---------- Pick (odd / even / multiples) ----------
+
+function varyPick(r, R) {
+  const test = pickTest(r.rule, r.k);
+  const lo = r.min || 1;
+  const pool = [];
+  for (let v = lo; v <= r.max; v++) pool.push(v);
+  for (let tries = 0; tries < 50; tries++) {
+    const values = shuffleR(R, pool).slice(0, r.count);
+    const hits = values.filter(test).length;
+    if (hits >= 2 && hits <= r.count - 2) return { ...r, values };
+  }
+  return r;
+}
+
 // ---------- Registry ----------
 
 const VARY = {
   build: varySeq, predict: varySeq, missing: varySeq, oddOne: varySeq, rule: varySeq,
   shapes: varyShapes, sort: varySort, balance: varyBalance, machine: varyMachine, mirror: varyMirror,
+  twins: varyTwins, pick: varyPick,
 };
 
-export function vary(round, R, band) {
+export function vary(round, R, band, { ease = 0 } = {}) {
   const fn = VARY[round.type];
   if (!fn || round.fixed) return round;
+  EASE = ease;
   try {
     return fn(round, R, band);
   } catch (e) {

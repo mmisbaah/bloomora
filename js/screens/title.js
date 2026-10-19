@@ -18,6 +18,9 @@ export function titleScreen(app, _params, nav) {
 
   app.append(h('div', { class: 'screen title-screen' },
     h('div', { class: 'title-top' },
+      h('button', { class: 'btn btn--ghost btn--small player-chip', 'aria-label': `Playing as ${S.currentProfile().name}. Change player`, onclick: nav.players },
+        `${S.currentProfile().emoji} ${S.currentProfile().name}`),
+      h('span', { class: 'title-top-gap' }),
       h('button', { class: 'btn btn--ghost btn--small', onclick: nav.guide }, 'For grown-ups'),
       muteButton()),
     h('div', { class: 'title-hero' },

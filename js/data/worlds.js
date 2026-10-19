@@ -26,7 +26,7 @@ export const WORLDS = [
       {
         id: 'tide-1', name: 'First Shells',
         skill: 'AB repeating pattern; counting on by 1 to 6',
-        std: ['Research: AB patterns first', 'CC K.CC.A.2', 'Eng Y1'],
+        std: ['Research: AB patterns first', 'CC K.CC.A.2*', 'Eng Y1'],
         intro: 'Patterns are how the lagoon grows. Watch closely and you can tell what comes next.',
         defaults: { seq: arith(1, 1) },
         rounds: [
@@ -38,7 +38,7 @@ export const WORLDS = [
       {
         id: 'tide-2', name: 'Starfish Steps',
         skill: 'AAB pattern; counting on from 2; missing number to 6',
-        std: ['Research: AAB after AB', 'CC K.CC.A.2'],
+        std: ['Research: AAB after AB', 'CC K.CC.A.2*'],
         intro: 'Starfish like to march in twos. Can you keep their parade going?',
         rounds: [
           { type: 'shapes', unit: ['⭐', '⭐', '🐚'], shown: 6, blanks: 2 },
@@ -49,7 +49,7 @@ export const WORLDS = [
       {
         id: 'tide-3', name: 'Turtle Line-Up',
         skill: 'Ordering numbers within 10',
-        std: ['CC K.CC.C.7', 'Eng Y1'],
+        std: ['CC K.CC.C.7*', 'Eng Y1'],
         intro: 'The baby turtles are racing to the sea. Help them line up first!',
         rounds: [
           { type: 'sort', values: [3, 7, 1, 5], critter: '🐢', critterName: 'turtles' },
@@ -71,7 +71,7 @@ export const WORLDS = [
       {
         id: 'tide-5', name: 'Count Down Cove',
         skill: 'Counting back in 1s and 2s from 10; AABC pattern',
-        std: ['Eng Y1: count backwards', 'CC 1.OA.C.5'],
+        std: ['Eng Y1: count backwards', 'CC 1.OA.C.5*'],
         intro: 'The tide is going out, so these pools get smaller each time.',
         rounds: [
           { type: 'build', seq: arith(10, -1), from: 1, show: 3, mode: 'one' },
@@ -129,7 +129,7 @@ export const WORLDS = [
       {
         id: 'shore-4', name: 'Up to Twenty',
         skill: 'Ordering and counting on within 20',
-        std: ['CC K.CC.A.2', 'CC 1.NBT.A.1'],
+        std: ['CC K.CC.A.2*', 'CC 1.NBT.A.1*'],
         intro: 'The lagoon goes deeper now. These numbers reach all the way to 20.',
         defaults: { style: 'number' },
         rounds: [
@@ -202,7 +202,7 @@ export const WORLDS = [
       {
         id: 'reef-2', name: 'Sea Fan Fours',
         skill: 'Counting in 4s to 32',
-        std: ['Eng Y3: multiples of 4', 'CC 3.OA.C.7'],
+        std: ['Eng Y3: multiples of 4', 'CC 3.OA.C.7*'],
         intro: 'Sea fans sprout four at a time.',
         defaults: { seq: arith(4, 4), item: '🌾', itemName: 'sea fan', itemPlural: 'sea fans' },
         rounds: [
@@ -235,6 +235,17 @@ export const WORLDS = [
           { type: 'oddOne', seq: arith(10, 10), from: 1, count: 6, bad: { at: 5, value: 55 } },
         ],
       },
+      {
+        id: 'reef-oe', name: 'Odds and Evens',
+        skill: 'Spotting odd and even numbers; multiples of 5',
+        std: ['CC 2.OA.C.3', 'Eng Y2: steps of 2 and 5'],
+        intro: 'Some fish swim in pairs and some swim alone. Can you tell them apart?',
+        rounds: [
+          { type: 'pick', rule: 'even', count: 8, max: 20 },
+          { type: 'pick', rule: 'odd', count: 8, max: 30 },
+          { type: 'pick', rule: 'multiple', k: 5, count: 8, max: 50 },
+        ],
+      },
     ],
   },
   {
@@ -248,7 +259,7 @@ export const WORLDS = [
       {
         id: 'mach-1', name: 'The Doubler',
         skill: '×2 and ×3 machines; one-sided scale (2 × ? = 8)',
-        std: ['CC 3.OA.A.4', 'CC 3.OA.C.7', 'Eng Y2–3 tables'],
+        std: ['CC 3.OA.A.4', 'CC 3.OA.C.7*', 'Eng Y2–3 tables'],
         intro: 'Numbers swim into these machines and come out changed. Find the secret rule.',
         rounds: [
           { type: 'machine', m: 2, b: 0, examples: [1, 2, 3], ask: 7 },
@@ -292,7 +303,7 @@ export const WORLDS = [
       {
         id: 'dock-5', name: 'Times Tide',
         skill: 'Multiplying within 100; working back from a product',
-        std: ['CC 3.OA.C.7', 'CC 3.OA.A.4', 'Eng Y3: 3, 4 and 8 tables'],
+        std: ['CC 3.OA.C.7*', 'CC 3.OA.A.4', 'Eng Y3: 3, 4 and 8 tables'],
         intro: 'The tide machines multiply. Sometimes you know what came out and need to find what went in.',
         rounds: [
           { type: 'machine', m: 4, b: 0, examples: [2, 5, 3], ask: 9 },
@@ -393,6 +404,18 @@ export const WORLDS = [
           { type: 'rule', seq: arith(4, 3), from: 1, show: 4 },
         ],
       },
+      {
+        id: 'mach-w', name: 'Twin Currents',
+        skill: 'Comparing two patterns made from two rules; multiples of 7',
+        std: ['CC 5.OA.B.3', 'Eng Y4: multiples of 7'],
+        intro: 'Two currents start at zero and add different amounts. Watch how their numbers line up.',
+        rounds: [
+          { type: 'twins', a: 3, k: 2, count: 5 },
+          { type: 'twins', a: 2, k: 3, count: 5 },
+          { type: 'pick', rule: 'multiple', k: 7, count: 8, max: 70 },
+          { type: 'twins', a: 4, k: 2, count: 5, ks: [2, 3, 4] },
+        ],
+      },
     ],
   },
   {
@@ -428,7 +451,7 @@ export const WORLDS = [
       {
         id: 'atol-1', name: 'Square Steps',
         skill: 'Square numbers as growing squares',
-        std: ['Eng Y5: square numbers', 'CC 6.EE.A.1'],
+        std: ['Eng Y5: square numbers', 'CC 6.EE.A.1*'],
         intro: 'Each sand square grows by one L-shaped border. Watch the gold tiles.',
         defaults: TILES,
         rounds: [
@@ -522,7 +545,7 @@ export const WORLDS = [
       {
         id: 'mach-3', name: 'Lagoon Scales',
         skill: 'Solving px + q = r; unknowns on both sides',
-        std: ['CC 6.EE.B.7', 'CC 7.EE.B.4', 'Eng Y6: missing numbers algebraically'],
+        std: ['CC 6.EE.B.7*', 'CC 7.EE.B.4*', 'Eng Y6: missing numbers algebraically'],
         intro: 'Whatever you do to one side of the scale, do to the other.',
         rounds: [
           { type: 'balance', critter: '🦀', left: { x: 4, k: 1 }, right: { x: 0, k: 13 } },
@@ -533,7 +556,7 @@ export const WORLDS = [
       {
         id: 'mach-4', name: 'Reverse Current',
         skill: 'Inverse operations; naming two-step rules',
-        std: ['CC 6.EE.C.9', 'CC 7.EE.B.4'],
+        std: ['CC 6.EE.C.9*', 'CC 7.EE.B.4*'],
         intro: 'The current has flipped. Sometimes you know what came out and need what went in.',
         rounds: [
           { type: 'machine', m: 2, b: 3, examples: [1, 2, 4], ask: 10, inverse: true },
@@ -556,13 +579,37 @@ export const WORLDS = [
       {
         id: 'mach-5', name: 'Machine Master',
         skill: 'Larger two-step rules, forwards and backwards',
-        std: ['CC 6.EE.C.9', 'CC 8.EE.C.7 (stretch)'],
+        std: ['CC 6.EE.C.9*', 'CC 8.EE.C.7* (stretch)'],
         intro: 'The biggest machines in the lagoon. Take it one row at a time.',
         rounds: [
           { type: 'machine', m: 4, b: 2, examples: [0, 1, 3], ask: 8 },
           { type: 'machine', m: 5, b: 0, examples: [2, 3, 6], ask: 9, inverse: true },
           { type: 'balance', critter: '🐙', left: { x: 6, k: 3 }, right: { x: 2, k: 19 } },
           { type: 'machine', m: 10, b: -3, examples: [1, 2, 5], ask: 4, pickRule: true },
+        ],
+      },
+      {
+        id: 'atol-7', name: 'Below Zero',
+        skill: 'Sequences that count down past zero into negative numbers',
+        std: ['CC 6.NS.C.5*', 'Eng Y6: negative numbers*'],
+        intro: 'The deeper you dive, the colder it gets. These numbers drop below zero!',
+        defaults: { negative: true, itemName: 'degree', itemPlural: 'degrees' },
+        rounds: [
+          { type: 'predict', seq: arith(9, -3), from: 1, show: 4, ask: 7 },
+          { type: 'missing', seq: arith(5, -4), from: 1, count: 6, gap: 4 },
+          { type: 'oddOne', seq: arith(10, -5), from: 1, count: 6, bad: { at: 5, value: -12 } },
+        ],
+      },
+      {
+        id: 'atol-8', name: 'Formula Finder',
+        skill: 'Writing the nth term of a linear sequence',
+        std: ['Eng KS3: nth term', 'CC 6.EE.A.2*'],
+        intro: 'A formula is a rule that works for any pool at all, even Pool 100.',
+        rounds: [
+          { type: 'rule', nth: true, seq: arith(5, 4), from: 1, show: 4 },
+          { type: 'predict', seq: arith(7, 2), from: 1, show: 4, ask: 25 },
+          { type: 'rule', nth: true, seq: arith(2, 5), from: 1, show: 4 },
+          { type: 'missing', seq: arith(3, 6), from: 1, count: 5, gap: 3 },
         ],
       },
     ],

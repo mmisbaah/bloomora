@@ -60,3 +60,16 @@ export function showFreeResults({ depth, score, pearls, isRecord, prev, onRetry,
       h('button', { class: 'btn btn--ghost', onclick: act(onMap) }, 'Map'),
       h('button', { class: 'btn', onclick: act(onRetry) }, 'Dive again'))));
 }
+
+// Plain results card for Daily Dive and Practice.
+export function showSimpleResults({ eyebrow, title, text, rows, onRetry, onMap }) {
+  const row = ([label, value]) => [h('dt', {}, label), h('dd', {}, value)];
+  openOverlay(h('div', { class: 'modal panel pop-in' },
+    h('div', { class: 'eyebrow' }, eyebrow),
+    h('h2', {}, title),
+    h('p', {}, text),
+    h('dl', { class: 'tally' }, rows.map(row)),
+    h('div', { class: 'modal-actions' },
+      h('button', { class: onRetry ? 'btn btn--ghost' : 'btn', onclick: act(onMap) }, 'Map'),
+      onRetry ? h('button', { class: 'btn', onclick: act(onRetry) }, 'Play again') : null)));
+}

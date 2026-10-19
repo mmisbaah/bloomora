@@ -60,6 +60,29 @@ function bossCard(boss, band, nav, stars) {
     h('button', { class: 'btn btn--small', disabled: !open, onclick: () => nav.level(boss.id, 0) }, open ? (rec ? 'Again' : 'Go') : 'Locked'));
 }
 
+function dailyCard(band, nav) {
+  const done = S.dailyDone(band.id);
+  const days = S.dailyStreak();
+  return h('article', { class: 'world-card boss-card panel', style: { '--w': 'var(--coral)' } },
+    h('div', { class: 'crest', 'aria-hidden': 'true' }, '📅'),
+    h('div', { class: 'boss-body' },
+      h('div', { class: 'eyebrow' }, done ? 'Done today ✓' : 'New every day'),
+      h('h2', {}, 'Daily Dive'),
+      h('div', { class: 'world-stars' }, days ? `🔥 ${days}-day streak` : 'Start a streak!')),
+    h('button', { class: `btn btn--small${done ? ' btn--ghost' : ''}`, onclick: () => nav.daily(band.id) }, done ? 'Again' : 'Go'));
+}
+
+function practiceCard(band, nav) {
+  const due = S.dueReviews(band.id).length;
+  if (!due) return null;
+  return h('article', { class: 'world-card boss-card panel', style: { '--w': 'var(--sand)' } },
+    h('div', { class: 'crest', 'aria-hidden': 'true' }, '🎯'),
+    h('div', { class: 'boss-body' },
+      h('div', { class: 'eyebrow' }, `${due} to practise`),
+      h('h2', {}, 'Practice Pool')),
+    h('button', { class: 'btn btn--sand btn--small', onclick: () => nav.practice(band.id) }, 'Go'));
+}
+
 function freeCard(band, nav) {
   const best = S.freeBest(band.id);
   return h('article', { class: 'world-card boss-card free-card panel', style: { '--w': band.color } },
@@ -95,7 +118,7 @@ export function mapScreen(app, _params, nav) {
       },
     }, h('span', { 'aria-hidden': 'true' }, b.emoji), ' ', h('span', { class: 'band-tab-ages' }, b.ages))));
 
-  const extras = h('div', { class: 'map-extras' }, freeCard(band, nav), boss ? bossCard(boss, band, nav, stars) : null);
+  const extras = h('div', { class: 'map-extras' }, dailyCard(band, nav), practiceCard(band, nav), freeCard(band, nav), boss ? bossCard(boss, band, nav, stars) : null);
   const pages = pager([...regular.map(w => worldCard(w, nav)), extras], { className: 'worlds', label: 'Page' });
 
   app.append(h('div', { class: 'screen' },
@@ -105,6 +128,7 @@ export function mapScreen(app, _params, nav) {
       h('div', { class: 'stat' }, h('span', { class: 'star-glyph' }, '★'), ` ${starsIn(worlds)}/${bandMax}`),
       pearlStat(),
       h('button', { class: 'icon-btn', 'aria-label': 'Collection', title: 'Collection', onclick: nav.collection }, '🏆'),
+      h('button', { class: 'icon-btn', 'aria-label': 'Sprig’s wardrobe', title: 'Sprig’s wardrobe', onclick: nav.shop }, '🎩'),
       h('button', { class: 'icon-btn', 'aria-label': 'For grown-ups', title: 'For grown-ups', onclick: nav.guide }, 'ℹ️'),
       readAloudButton(),
       muteButton()),

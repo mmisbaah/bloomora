@@ -3,10 +3,12 @@ import { h } from '../core/dom.js';
 import { audio } from '../core/audio.js';
 import * as S from '../core/state.js';
 import { canSpeak, readAloudOn, stopSpeaking } from '../core/speech.js';
+import { findHat } from '../data/shop.js';
 
 export function sprig(size = '') {
+  const hat = findHat(S.getState().hat);
   return h('div', { class: `sprig ${size}`, 'aria-hidden': 'true' },
-    h('span', { class: 'sprig-leaf' }),
+    hat ? h('span', { class: 'sprig-hat' }, hat.emoji) : h('span', { class: 'sprig-leaf' }),
     h('span', { class: 'sprig-eye l' }),
     h('span', { class: 'sprig-eye r' }),
     h('span', { class: 'sprig-mouth' }));

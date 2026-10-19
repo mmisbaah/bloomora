@@ -3,6 +3,7 @@ import { h } from '../core/dom.js';
 import { audio } from '../core/audio.js';
 import { seqFn, hintFor } from '../core/sequences.js';
 import { poolCard, renderTerm } from '../core/render.js';
+import { jumpStrip, why } from '../core/explain.js';
 
 // Each mode turns "number of presses" (k) into a pool value.
 const MODES = {
@@ -17,6 +18,7 @@ export default {
   name: 'Build the Pool',
   prompt: r => `Build Pool ${r.from + r.show}`,
   say: r => `Use the buttons to fill Pool ${r.from + r.show}, then press Check.`,
+  nudge: () => 'Look at how much each pool grows. Your pool grows by the same amount.',
   hint(r) {
     const f = seqFn(r.seq);
     const t = r.from + r.show;
@@ -70,10 +72,9 @@ export default {
       if (v === target) {
         buildCard.classList.add('pool--win');
         api.correct(`Pool ${t} is built with exactly ${target} ${r.itemPlural}!`);
-      } else if (v < target) {
-        api.wrong(`${v} is not enough for Pool ${t}. Add more.`);
       } else {
-        api.wrong(`${v} is too many for Pool ${t}.`);
+        api.wrong(v < target ? `${v} is not enough for Pool ${t}. Add more.` : `${v} is too many for Pool ${t}.`);
+        api.showWhy(why('Follow the jumps to your pool', jumpStrip(r.seq, r.from, t, { hide: [t] })));
       }
     }
 
