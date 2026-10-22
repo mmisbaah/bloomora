@@ -10,7 +10,7 @@ const listed = new Set([...sw.matchAll(/^\s*'([^']+)',$/gm)].map(m => m[1]));
 
 const walk = dir => readdirSync(dir).flatMap(name => {
   const p = join(dir, name);
-  return statSync(p).isDirectory() ? walk(p) : [relative(root, p)];
+  return statSync(p).isDirectory() ? walk(p) : [relative(root, p).split('\\').join('/')];
 });
 const needed = ['index.html', 'manifest.webmanifest', ...['css', 'js', 'icons'].flatMap(d => walk(join(root, d)))];
 const missing = needed.filter(f => !listed.has(f));

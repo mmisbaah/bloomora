@@ -32,6 +32,8 @@ async def play(page, band, wid, idx, lang):
     while time.time() - start < 90:
         await page.wait_for_timeout(250)
         state = await page.evaluate("""()=>{
+          const reason=document.querySelector('.reasoning-check');
+          if(reason) { reason.querySelector('[data-reason-correct="true"]').click(); [...reason.querySelectorAll('button')].find(b=>!b.hidden&&b.classList.contains('btn')&&!b.classList.contains('btn--ghost')).click(); return {}; }
           const ov=document.querySelector('.overlay .stars-big'); if(ov) return {done:[...ov.querySelectorAll('.star.on')].length};
           if(document.querySelector('.overlay')) return {fail:document.querySelector('.overlay').innerText.slice(0,80)};
           const p=document.querySelector('.puzzle'); const r=p&&p.bloomoraRound; if(!r) return {};

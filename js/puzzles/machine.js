@@ -101,6 +101,7 @@ export default {
         b.classList.add('is-wrong');
         b.disabled = true;
         api.wrong('That rule fails on one of the rows. Test it.');
+        api.showWhy(why('Test the rule on a known pair', h('p', {}, `In ${r.examples[0]} → Out ${f(r.examples[0])}. A correct rule must also work on every other row.`)));
       }
     }
 

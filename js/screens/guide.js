@@ -12,6 +12,7 @@ import * as S from '../core/state.js';
 import { PUZZLES } from '../puzzles/index.js';
 import { settingsButton } from '../ui/settings.js';
 import { pager } from '../ui/pager.js';
+import { skillLabel } from '../core/skills.js';
 
 const settingChips = s => [
   s.hearts ? `${s.hearts} hearts` : 'No hearts to lose',
@@ -26,7 +27,7 @@ const settingChips = s => [
 const OVERVIEW = [
   `Bloomora splits its ${LEVEL_COUNT} levels into four age bands. Each topic sits in the band where the US Common Core and England’s national curriculum first teach it. Where the two disagree, the game uses the earlier year and labels the later one as a preview.`,
   'Bands also change how forgiving the game is. Younger players get more hearts (the youngest get none to lose), free hints, fewer answer choices, read-aloud and no clock. Older players get a timed boss and speed bonuses. Any child can open any band from the map.',
-  'After a wrong answer, a “show me why” picture appears: the jumps between pools, the weight on each side of a scale, or one tile that was missed. Hints come in two steps, a nudge first and then the full hint. If a child struggles twice in a row the next puzzles get gentler, and three clean puzzles in a row make them harder. Missed puzzles come back later in the Practice Pool and in Free Dive.',
+  'After a wrong answer, a “show me why” picture appears. Corrections cost at most one heart per puzzle. Help is free for everyone: a clue, a worked example, then guided steps. Relaxed mode removes hearts and timers. Missed skills return in short Practice Pool sessions of up to three puzzles. Using help does not count as independent mastery.',
   'Problems are generated fresh on every play. Each level keeps its skill (the same step size, the same kind of equation, the same mirror size, the same repeating structure), but the numbers, starting point, creatures and mirror pictures change, always inside the level’s limits. Free Dive keeps generating puzzles from a band until the hearts run out.',
   'Beyond number sequences, levels use growing stick shapes, short pattern stories, tables and bar graphs, money, clock times, halves and decimals. Pattern Maker turns things around: the child makes a pattern and Sprig has to guess the rule, which gets children describing rules in their own words.',
   'Accessibility: right and wrong answers are marked with ✓ and ✗, not just colour. Keys 1–9 choose answers and numbers can be typed. ⚙️ Settings has big text, read-aloud, sound and music switches, and Arabic with a right-to-left layout (level names and intros stay in English for now).',
@@ -47,9 +48,10 @@ function progressItems() {
     const skills = Object.entries(d.skills || {})
       .map(([type, k]) => ({ name: PUZZLES[type]?.name || type, pct: Math.round((100 * k.right) / Math.max(1, k.right + k.wrong)), n: k.right + k.wrong }))
       .sort((a, b) => a.pct - b.pct);
+    const objectives = Object.values(d.objectives || {}).sort((a, b) => a.independent / Math.max(1, a.attempts) - b.independent / Math.max(1, b.attempts));
     const review = (d.review || []).map(r => {
       const t = templateFor(r.src);
-      return t ? `${templateLabel(r.src)} (${PUZZLES[t.type].name})` : null;
+      return t ? `${skillLabel(t)} · ${templateLabel(r.src)}` : null;
     }).filter(Boolean);
     // Two cards per player so each one fits a short screen.
     return [h('div', { class: 'guide-card panel' },
@@ -63,7 +65,11 @@ function progressItems() {
         ? h('div', { class: 'guide-chips' }, skills.map(k => h('span', { class: `chip${k.pct < 60 ? ' chip--stretch' : ''}` }, `${k.name} ${k.pct}% (${k.n})`)))
         : h('p', { class: 'guide-meta' }, 'No puzzles played yet.'),
       h('div', { class: 'eyebrow' }, 'Waiting in the Practice Pool'),
-      h('p', { class: 'guide-meta' }, review.length ? [...new Set(review)].slice(0, 8).join(' · ') : 'Nothing right now.'))];
+      h('p', { class: 'guide-meta' }, review.length ? [...new Set(review)].slice(0, 8).join(' · ') : 'Nothing right now.')),
+    h('div', { class: 'guide-card panel' },
+      h('h3', {}, `${p.emoji} ${p.name}: learning goals`),
+      h('p', { class: 'guide-meta' }, 'Independent means correct without hints or corrections. Practice is at most three puzzles, then a break.'),
+      objectives.length ? h('div', { class: 'guide-chips' }, objectives.slice(0, 6).map(k => h('span', { class: 'chip' }, `${k.label}: ${k.independent}/${k.attempts} independent · ${k.helped} with help`))) : h('p', {}, 'Play to discover which skills need practice.'))];
   }).flat();
 }
 
@@ -102,7 +108,7 @@ function codeBox(title, code) {
 }
 
 function pasteBox({ title, text, ok, onOk }) {
-  const area = h('textarea', { class: 'code-box', rows: 5, placeholder: 'BLOOM1-…', 'aria-label': 'Paste codes here' });
+  const area = h('textarea', { class: 'code-box', rows: 5, placeholder: 'BLOOM2-…', 'aria-label': 'Paste codes here' });
   openOverlay(h('div', { class: 'modal panel pop-in' },
     h('h2', {}, title), h('p', {}, text), area,
     h('div', { class: 'modal-actions' },
@@ -120,7 +126,7 @@ function weakest(skills) {
 
 function classView(raw) {
   const kids = raw.split(/\s+/).map(decodeProgress).filter(Boolean);
-  if (!kids.length) { toast('No progress codes found. They start with BLOOM1-'); return; }
+  if (!kids.length) { toast('No progress codes found. Use a BLOOM1- or BLOOM2- code.'); return; }
   const lastWorld = k => {
     const done = WORLDS.filter(w => w.levels.some(l => k.levels[l.id]));
     return done.length ? done[done.length - 1].name : '–';
@@ -145,7 +151,7 @@ function shareItems(nav) {
   return [
     h('div', { class: 'guide-card panel' },
       h('div', { class: 'eyebrow' }, 'Share progress'),
-      h('p', {}, 'Each player has a progress code: stars, levels and puzzle accuracy packed into text. Nothing is sent anywhere. You choose where the code goes.'),
+      h('p', {}, 'Progress is saved only in this browser on this device. Clearing browser data can erase it. Keep a progress code as a backup: it includes stars, scores, pearls, wardrobe, records, practice history and settings. Nothing is sent anywhere unless you copy the code.'),
       h('div', { class: 'guide-chips' }, S.profiles().map(p => h('button', { class: 'btn btn--small btn--ghost', onclick: () => codeBox(`${p.emoji} ${p.name}’s code`, encodeProgress(p, S.peekProfile(p.id))) }, `${p.emoji} ${p.name}`)))),
     h('div', { class: 'guide-card panel' },
       h('div', { class: 'eyebrow' }, 'For teachers'),
@@ -153,10 +159,10 @@ function shareItems(nav) {
       h('button', { class: 'btn btn--small', onclick: () => pasteBox({ title: 'Class view', text: 'Paste one or more progress codes. Spaces or new lines between them are fine.', ok: 'Show class', onOk: classView }) }, '📋 Open class view')),
     h('div', { class: 'guide-card panel' },
       h('div', { class: 'eyebrow' }, 'Move a player to this device'),
-      h('p', {}, 'Paste a code to add that player here with their stars and levels.'),
+      h('p', {}, 'Paste a BLOOM2 code to restore the full player. Older BLOOM1 codes restore the stars and summary they originally contained.'),
       h('button', { class: 'btn btn--small btn--ghost', disabled: !S.canAddProfile(), onclick: () => pasteBox({ title: 'Add a player from a code', text: 'Paste one progress code.', ok: 'Add player', onOk: v => {
         const p = decodeProgress(v);
-        if (!p) { toast('That code didn’t work. Check it starts with BLOOM1-'); return; }
+        if (!p) { toast('That code didn’t work. Use a BLOOM1- or BLOOM2- code.'); return; }
         S.importProfile(p);
         closeOverlay();
         toast(`${p.name} has joined!`);

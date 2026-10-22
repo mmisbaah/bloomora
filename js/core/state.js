@@ -1,6 +1,8 @@
 // Player progress, one save per player profile. Kept in localStorage when the browser allows it;
 // the game still runs without it. The first profile uses the original save key, so progress
 // from before profiles existed carries over as "Player 1".
+import { skillFor, skillLabel } from './skills.js';
+import { cleanSave } from './save.js';
 const INDEX_KEY = 'bloomora-profiles';
 const LEGACY_KEY = 'bloomora-lagoon-v2';
 const START_PEARLS = 15;
@@ -13,8 +15,8 @@ const REVIEW_GAPS = [0, 1, 3, 7];
 // review: missed puzzles to bring back later. skills: right/wrong counts per puzzle type.
 const defaults = () => ({
   levels: {}, pearls: START_PEARLS, muted: false, band: null, readAloud: null, free: {},
-  review: [], skills: {}, daily: { last: null, streak: 0, best: 0, done: {} }, owned: [], hat: null,
-  music: true, textSize: 'normal', tutorials: {}, lang: 'en', storiesSeen: {},
+  review: [], skills: {}, objectives: {}, reasoning: {}, daily: { last: null, streak: 0, best: 0, done: {} }, owned: [], hat: null,
+  music: true, textSize: 'normal', tutorials: {}, lang: 'en', storiesSeen: {}, relaxed: false,
 });
 
 const read = key => {
@@ -30,7 +32,7 @@ let state = load(index.current);
 
 function load(id) {
   const saved = read(keyFor(id));
-  return saved ? { ...defaults(), ...saved, daily: { ...defaults().daily, ...saved.daily } } : defaults();
+  return saved ? cleanSave(saved) : defaults();
 }
 function save() {
   write(keyFor(index.current), state);
@@ -54,7 +56,8 @@ export function switchProfile(id) {
 
 export function addProfile(name, emoji) {
   if (!canAddProfile()) return null;
-  const id = `p${Date.now().toString(36)}`;
+  let id = `p${Date.now().toString(36)}`;
+  while (index.list.some(p => p.id === id)) id += 'x';
   index.list.push({ id, name: name.trim().slice(0, 16) || 'Diver', emoji });
   switchProfile(id);
   save();
@@ -73,7 +76,7 @@ export function removeProfile(id) {
 export function importProfile(p) {
   if (!canAddProfile()) return null;
   const id = addProfile(p.name, p.emoji);
-  state = { ...defaults(), band: p.band, pearls: p.pearls, levels: p.levels, skills: p.skills, daily: { ...defaults().daily, best: p.bestStreak } };
+  state = cleanSave(p);
   save();
   return id;
 }
@@ -90,7 +93,7 @@ export function hasSavedProgress() {
 }
 
 export function replaceState(next) {
-  state = { ...defaults(), ...next };
+  state = cleanSave(next);
   save();
 }
 
@@ -199,6 +202,24 @@ export function recordSkill(type, right) {
   save();
 }
 
+export function recordLearning(round, { right, assisted = false }) {
+  const key = skillFor(round);
+  const prev = state.objectives[key] || { label: skillLabel(round), attempts: 0, independent: 0, helped: 0, wrong: 0 };
+  prev.attempts++;
+  if (!right) prev.wrong++;
+  else if (assisted) prev.helped++;
+  else prev.independent++;
+  state.objectives[key] = prev;
+  save();
+}
+
+export function recordReasoning(round, right) {
+  const key = skillFor(round), prev = state.reasoning[key] || { right: 0, wrong: 0 };
+  prev[right ? 'right' : 'wrong']++;
+  state.reasoning[key] = prev;
+  save();
+}
+
 // A missed puzzle goes (back) to box 0 and comes back in the next practice.
 export function recordMiss(src, band) {
   if (!src) return;
@@ -240,6 +261,7 @@ export function wearItem(id) {
 }
 
 export function resetProgress() {
-  state = { ...defaults(), muted: state.muted, band: state.band, readAloud: state.readAloud };
+  const { muted, band, readAloud, relaxed, music, textSize, lang } = state;
+  state = { ...defaults(), muted, band, readAloud, relaxed, music, textSize, lang };
   save();
 }

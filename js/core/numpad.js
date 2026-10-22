@@ -42,6 +42,7 @@ export function numpad({ onSubmit, onChange = () => {}, maxLen = 4, negative = f
     negative ? key('sign', 'Make it negative or positive', 'np-key--sign', '±') : null);
 
   const onKey = e => {
+    if (document.querySelector('.overlay')) return;
     if (e.target.closest?.('input, textarea')) return;
     if (/^[0-9]$/.test(e.key)) press(e.key);
     else if (e.key === 'Backspace') press('del');

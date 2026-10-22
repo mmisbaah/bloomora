@@ -1,32 +1,36 @@
-// Progress codes: a player's progress packed into a short text code. A parent can move a child
-// to another device with it, and a teacher can paste several codes to see a class summary.
-// Nothing leaves the device unless someone copies the code; there is no server.
-const PREFIX = 'BLOOM1-';
-
-const toB64 = text => btoa(String.fromCharCode(...new TextEncoder().encode(text))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
-const fromB64 = code => new TextDecoder().decode(Uint8Array.from(atob(code.replace(/-/g, '+').replace(/_/g, '/')), c => c.charCodeAt(0)));
+// Complete versioned backups. Older BLOOM1 summary codes remain readable.
+import { cleanSave } from './save.js';
+const toB64 = text => {
+  let binary = '';
+  for (const byte of new TextEncoder().encode(text)) binary += String.fromCharCode(byte);
+  return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+};
+const fromB64 = code => new TextDecoder('utf-8', { fatal: true }).decode(Uint8Array.from(atob(code.replace(/-/g, '+').replace(/_/g, '/')), c => c.charCodeAt(0)));
 
 export function encodeProgress(profile, data) {
-  const levels = Object.fromEntries(Object.entries(data.levels).map(([id, r]) => [id, r.stars]));
-  const skills = Object.fromEntries(Object.entries(data.skills || {}).map(([t, k]) => [t, [k.right, k.wrong]]));
-  return PREFIX + toB64(JSON.stringify({ n: profile.name, e: profile.emoji, b: data.band, p: data.pearls, l: levels, s: skills, d: data.daily?.best || 0 }));
+  return 'BLOOM2-' + toB64(JSON.stringify({ version: 2, name: profile.name, emoji: profile.emoji, state: cleanSave(data) }));
 }
 
 export function decodeProgress(code) {
   const text = String(code).trim();
-  if (!text.startsWith(PREFIX)) return null;
+  if (text.length > 250000 || !/^BLOOM[12]-[A-Za-z0-9_-]+$/.test(text)) return null;
   try {
-    const o = JSON.parse(fromB64(text.slice(PREFIX.length)));
-    if (typeof o !== 'object' || !o.l) return null;
-    return {
-      name: String(o.n || 'Diver').slice(0, 16),
-      emoji: typeof o.e === 'string' ? o.e.slice(0, 4) : '🐠',
-      band: o.b || null,
-      pearls: Number.isFinite(o.p) ? o.p : 0,
-      bestStreak: Number.isFinite(o.d) ? o.d : 0,
-      levels: Object.fromEntries(Object.entries(o.l).filter(([, v]) => v >= 1 && v <= 3).map(([id, stars]) => [id, { stars, score: 0 }])),
-      skills: Object.fromEntries(Object.entries(o.s || {}).map(([t, [right, wrong]]) => [t, { right: +right || 0, wrong: +wrong || 0 }])),
-    };
+    const o = JSON.parse(fromB64(text.slice(7)));
+    if (!o || typeof o !== 'object' || Array.isArray(o)) return null;
+    let save, name, emoji;
+    if (text.startsWith('BLOOM2-')) {
+      if (o.version !== 2 || !o.state || typeof o.state !== 'object' || Array.isArray(o.state) || !o.state.levels || typeof o.name !== 'string') return null;
+      save = cleanSave(o.state); name = o.name; emoji = o.emoji;
+    } else {
+      if (!o.l || typeof o.l !== 'object' || Array.isArray(o.l)) return null;
+      save = cleanSave({ band: o.b, pearls: o.p,
+        levels: Object.fromEntries(Object.entries(o.l).map(([id, stars]) => [id, { stars, score: 0 }])),
+        skills: Object.fromEntries(Object.entries(o.s || {}).filter(([, v]) => Array.isArray(v)).map(([key, [right, wrong]]) => [key, { right, wrong }])),
+        daily: { best: o.d },
+      });
+      name = o.n; emoji = o.e;
+    }
+    return { ...save, name: String(name || 'Diver').slice(0, 16), emoji: typeof emoji === 'string' ? emoji.slice(0, 8) : '🐠', bestStreak: save.daily.best };
   } catch (e) {
     return null;
   }

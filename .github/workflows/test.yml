@@ -16,3 +16,13 @@ jobs:
         run: node tests/generator.test.mjs
       - name: Offline file list is complete
         run: node tests/offline.test.mjs
+      - name: Progress backups and targeted practice
+        run: node tests/state.test.mjs
+      - name: Install browser test tools
+        run: npm install --no-save --package-lock=false playwright@1.56.1
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Learning support and player journeys
+        run: node tests/experience.test.cjs
+      - name: Campaign in portrait, landscape and Arabic
+        run: node tests/campaign.test.cjs

@@ -4,7 +4,7 @@ import { WORLDS, findWorld, worldsInBand } from './worlds.js';
 
 export function levelTemplates(world, levelIndex) {
   const level = world.levels[levelIndex];
-  return level.rounds.map((r, i) => ({ ...world.defaults, ...level.defaults, ...r, src: `${world.id}:${levelIndex}:${i}` }));
+  return level.rounds.map((r, i) => ({ ...world.defaults, ...level.defaults, ...r, levelId: level.id, src: `${world.id}:${levelIndex}:${i}` }));
 }
 
 // Every regular (non-boss) template in a band, grouped by level in play order.

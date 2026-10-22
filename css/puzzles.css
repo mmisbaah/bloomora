@@ -402,6 +402,11 @@ button.stone:hover:not(:disabled) { transform: translateY(-3px); }
 .xs-pool { font-size: 0.9rem; }
 .twin-label { font-size: 1rem; }
 .explain-title { font-size: 1rem; }
+.help-example { padding: 10px 14px; border: 2px solid var(--sand); border-radius: 16px; background: var(--panel-solid); max-width: 100%; text-align: center; }
+.help-example h3 { font-size: var(--step-0); }
+.help-example p { margin: 6px 0; }
+.mirror-example { font-size: 1.8rem; direction: ltr; }
+.guided-target { outline: 3px dashed var(--sand); outline-offset: 3px; }
 @media (max-height: 640px) {
   .xs-pool { display: none; }
   .explain { padding: 6px 10px; gap: 4px; }
