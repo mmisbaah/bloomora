@@ -1,6 +1,6 @@
 # Plays every level in a real browser with a solver that answers like a child (tapping and
 # typing), at phone portrait and phone landscape sizes. Checks each level ends with 3 stars,
-# no JavaScript errors, and nothing overflowing the screen.
+# no JavaScript errors, every puzzle visible, and nothing overflowing the screen.
 # Needs Playwright for Python and Chromium. Run from the repo root: python3 tests/play.test.py
 import asyncio, json, os, subprocess, sys, time
 from playwright.async_api import async_playwright
@@ -13,7 +13,7 @@ WORKERS = 6
 
 MEASURE = """()=>{const p=document.querySelector('.puzzle'), fit=p.querySelector('.fit'), de=document.documentElement;
   const m=+((fit.style.transform.match(/scale\\(([\\d.]+)\\)/)||[0,1])[1]);
-  return {scale:m, over: de.scrollWidth>innerWidth+1 || de.scrollHeight>innerHeight+1 || fit.offsetHeight*m>p.clientHeight+2};}"""
+  return {scale:m, hidden: +getComputedStyle(fit).opacity < 0.9, over: de.scrollWidth>innerWidth+1 || de.scrollHeight>innerHeight+1 || fit.offsetHeight*m>p.clientHeight+2};}"""
 
 async def level_list(page):
     return await page.evaluate("""(async()=>{const m=await import('./js/data/worlds.js');
@@ -46,6 +46,7 @@ async def play(page, band, wid, idx, lang):
             size = await page.evaluate(MEASURE)
             report['minScale'] = min(report['minScale'], size['scale'])
             report['overflow'] |= size['over']
+            if size['hidden']: report['fail'] = f"puzzle {len(report['types'])+1} invisible"; return report
             if state['fresh']: report['types'].append(state['type'])
             await page.evaluate("()=>{window.__last=document.querySelector('.puzzle').bloomoraRound}")
             res = await page.evaluate("window.__bloomoraSolve()")

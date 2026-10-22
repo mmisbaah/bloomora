@@ -272,6 +272,7 @@ export function levelScreen(app, params, nav) {
     promptEl.textContent = puzzlePrompt(P, round);
     fitBox.replaceChildren();
     puzzleRoot.className = `puzzle puzzle--${P.id}`;
+    fitBox.classList.remove('swim-out'); // otherwise the last puzzle's fade-out keeps this one invisible
     replay(fitBox, 'swim-in');
     puzzleRoot.bloomoraRound = round; // lets automated tests read the generated round
 

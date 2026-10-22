@@ -1,7 +1,7 @@
 // Offline support: the first visit saves every game file, so later visits work without internet.
 // Bump VERSION whenever files change so players get the new ones. tests/offline.test.mjs checks
 // that FILES lists everything the game loads.
-const VERSION = 'bloomora-v5';
+const VERSION = 'bloomora-v6';
 const FILES = [
   './',
   'index.html',
