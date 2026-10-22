@@ -4,7 +4,8 @@ import { audio } from '../core/audio.js';
 import { toast } from '../core/fx.js';
 import * as S from '../core/state.js';
 import { HATS } from '../data/shop.js';
-import { sprig, muteButton, pearlStat } from '../ui/widgets.js';
+import {sprig, pearlStat } from '../ui/widgets.js';
+import { settingsButton } from '../ui/settings.js';
 import { pager } from '../ui/pager.js';
 
 export function shopScreen(app, _params, nav) {
@@ -38,7 +39,7 @@ export function shopScreen(app, _params, nav) {
       h('button', { class: 'icon-btn', 'aria-label': 'Back to map', onclick: nav.map }, '←'),
       h('div', { class: 'top-bar-title' }, h('h1', {}, 'Sprig’s Wardrobe')),
       pearlStat(),
-      muteButton()),
+      settingsButton()),
     h('div', { class: 'sprig-bar' }, sprig(),
       h('div', { class: 'speech panel' }, h('p', { class: 'speech-text' }, 'Pick something for me to wear! You earn pearls by clearing levels, Daily Dives and practice.'))),
     pages.el));

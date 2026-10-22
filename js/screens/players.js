@@ -4,7 +4,8 @@ import { audio } from '../core/audio.js';
 import * as S from '../core/state.js';
 import { findBand } from '../data/bands.js';
 import { PLAYER_EMOJI } from '../data/shop.js';
-import { muteButton, openOverlay, closeOverlay, confirmBox } from '../ui/widgets.js';
+import {openOverlay, closeOverlay, confirmBox } from '../ui/widgets.js';
+import { settingsButton } from '../ui/settings.js';
 import { pager } from '../ui/pager.js';
 
 function addPlayerBox(nav) {
@@ -72,7 +73,7 @@ export function playersScreen(app, _params, nav) {
     h('header', { class: 'top-bar' },
       h('button', { class: 'icon-btn', 'aria-label': 'Back to title', onclick: nav.title }, '←'),
       h('div', { class: 'top-bar-title' }, h('h1', {}, 'Who’s playing?')),
-      muteButton()),
+      settingsButton()),
     pages.el));
   pages.layout();
 }

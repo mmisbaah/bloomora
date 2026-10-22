@@ -22,6 +22,7 @@ export default {
     cards = shuffle(cards);
     const list = h('div', { class: 'cards' }, cards.map(c => {
       const b = h('button', { class: 'rule-card', onclick: () => choose(c, b) }, c.text);
+      b.bloomoraOk = !!c.correct; // read by automated tests
       return b;
     }));
 

@@ -11,12 +11,12 @@ export const BANDS = [
     color: 'var(--coral)',
     grades: 'Kindergarten–Grade 1 (US) · Reception–Year 1 (England)',
     focus: 'Repeating patterns, counting on and back within 20, counting in 2s, 5s and 10s.',
-    settings: { hearts: 5, hintCost: 0, timer: false, speedBonus: false, options: 3, readAloud: true, stars: [1, 3] },
+    settings: { hearts: 0, hintCost: 0, timer: false, speedBonus: false, options: 3, readAloud: true, stars: [1, 3] },
     why: [
       'Repeating patterns step up from AB to AAB to ABC. Research from the Rittle-Johnson lab finds difficulty rises with the number of items in the repeating unit, and that patterning at ages 4–6 predicts later maths.',
       'Counting to 100 by ones and tens is Kindergarten standard K.CC.A.1. Counting in multiples of 2, 5 and 10 is a Year 1 objective in England.',
-      'Read-aloud starts on and every action is one tap. Most children this age are early readers, and drag or pinch gestures are hard for small hands.',
-      'Five hearts, free hints, no clock and fewer answer choices. Mistakes are part of learning here, and 3 stars still allows one slip.',
+      'Read-aloud starts on, every action is one tap, and results say what the child can now do rather than showing points. Most children this age are early readers, and drag or pinch gestures are hard for small hands.',
+      'No hearts to lose in levels, free hints, no clock and fewer answer choices. Mistakes are part of learning here, so a child can keep trying until they get it. Stars still reward care: 3 stars allows one slip. Free Dive keeps five hearts so it has an ending.',
     ],
   },
   {

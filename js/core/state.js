@@ -14,6 +14,7 @@ const REVIEW_GAPS = [0, 1, 3, 7];
 const defaults = () => ({
   levels: {}, pearls: START_PEARLS, muted: false, band: null, readAloud: null, free: {},
   review: [], skills: {}, daily: { last: null, streak: 0, best: 0, done: {} }, owned: [], hat: null,
+  music: true, textSize: 'normal', tutorials: {}, lang: 'en', storiesSeen: {},
 });
 
 const read = key => {
@@ -66,6 +67,15 @@ export function removeProfile(id) {
   try { localStorage.removeItem(keyFor(id)); } catch (e) { /* ignore */ }
   if (index.current === id) switchProfile(index.list[0].id);
   write(INDEX_KEY, index);
+}
+
+// Add a player from a progress code (see core/share.js).
+export function importProfile(p) {
+  if (!canAddProfile()) return null;
+  const id = addProfile(p.name, p.emoji);
+  state = { ...defaults(), band: p.band, pearls: p.pearls, levels: p.levels, skills: p.skills, daily: { ...defaults().daily, best: p.bestStreak } };
+  save();
+  return id;
 }
 
 // Read another player's save without switching to it (for the grown-ups progress page).
@@ -121,6 +131,11 @@ export function setMuted(muted) {
 
 export function setBand(band) {
   state.band = band;
+  save();
+}
+
+export function setPref(key, value) {
+  state[key] = value;
   save();
 }
 

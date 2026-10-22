@@ -2,6 +2,7 @@
 import { h, shuffle, replay } from '../core/dom.js';
 import { audio } from '../core/audio.js';
 import { why } from '../core/explain.js';
+import { pic } from '../ui/art.js';
 
 const DECOYS = ['🦑', '🐙', '🪼', '🐡', '🦐', '🐚', '⭐', '🐠', '🦀', '🐢', '🔶', '🟢'];
 
@@ -20,7 +21,7 @@ export default {
 
     const parade = h('div', { class: 'parade' });
     for (let i = 0; i < r.shown; i++) {
-      parade.append(h('div', { class: 'parade-item', style: { animationDelay: `${i * 60}ms` } }, r.unit[i % len]));
+      parade.append(h('div', { class: 'parade-item', style: { animationDelay: `${i * 60}ms` } }, pic(r.unit[i % len])));
     }
     const slots = answers.map((_, i) => h('div', { class: `parade-item parade-slot${i === 0 ? ' active' : ''}` }, '?'));
     parade.append(...slots);
@@ -28,7 +29,7 @@ export default {
     const unique = [...new Set(r.unit)];
     const decoy = shuffle(DECOYS).find(d => !unique.includes(d));
     const options = h('div', { class: 'parade-options' }, shuffle([...unique, decoy]).map(o => {
-      const b = h('button', { class: 'parade-option', 'aria-label': `Place ${o}`, onclick: () => place(o, b) }, o);
+      const b = h('button', { class: 'parade-option', 'aria-label': `Place ${o}`, onclick: () => place(o, b) }, pic(o));
       return b;
     }));
 
@@ -37,7 +38,7 @@ export default {
       if (o === answers[filled]) {
         audio.tap();
         const slot = slots[filled];
-        slot.textContent = o;
+        slot.replaceChildren(pic(o));
         slot.classList.remove('active');
         slot.classList.add('filled', 'pop-in');
         filled++;
@@ -48,7 +49,7 @@ export default {
         api.wrong(`${o} doesn't go there. Say the pattern out loud from the start.`);
         const groups = Math.ceil((r.shown + blanks) / len);
         api.showWhy(why('The parade is the same group over and over',
-          h('div', { class: 'xs-groups' }, Array.from({ length: Math.min(groups, 3) }, () => h('span', { class: 'xs-group' }, r.unit.join(' '))), h('span', { class: 'xs-more' }, '…'))));
+          h('div', { class: 'xs-groups' }, Array.from({ length: Math.min(groups, 3) }, () => h('span', { class: 'xs-group' }, r.unit.map(u => pic(u)))), h('span', { class: 'xs-more' }, '…'))));
       }
     }
 

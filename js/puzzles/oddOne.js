@@ -12,13 +12,14 @@ export default {
   hint: r => `${hintFor(r.seq)} Find the jump that looks different.`,
   mount(root, r, api) {
     const f = seqFn(r.seq);
+    const show = v => fmt(v, r.seq.format);
     const stones = h('div', { class: 'stones' });
 
     for (let n = r.from; n < r.from + r.count; n++) {
       const bad = n === r.bad.at;
       const value = bad ? r.bad.value : f(n);
       const b = h('button', { class: 'stone', 'aria-label': `Stone ${value}`, onclick: () => tap(bad, b, n, value) },
-        h('span', { class: 'stone-num' }, fmt(value)));
+        h('span', { class: 'stone-num' }, show(value)));
       stones.append(b);
     }
 
@@ -26,12 +27,12 @@ export default {
       if (api.locked) return;
       if (bad) {
         b.classList.add('is-fixed', 'pop-in');
-        b.replaceChildren(h('s', { class: 'stone-old' }, fmt(value)), h('span', { class: 'stone-num' }, fmt(f(n))));
-        api.correct(`Found it! That stone should say ${f(n)}.`);
+        b.replaceChildren(h('s', { class: 'stone-old' }, show(value)), h('span', { class: 'stone-num' }, show(f(n))));
+        api.correct(`Found it! That stone should say ${show(f(n))}.`);
       } else {
         b.classList.add('is-wrong');
         b.disabled = true;
-        api.wrong(`${fmt(value)} fits the pattern. Look at the jumps again.`);
+        api.wrong(`${show(value)} fits the pattern. Look at the jumps again.`);
         api.showWhy(why('Two jumps look different from the rest', jumpStrip(r.seq, r.from, r.from + r.count - 1, { values: { [r.bad.at]: r.bad.value }, mark: [r.bad.at - 1, r.bad.at] })));
       }
     }

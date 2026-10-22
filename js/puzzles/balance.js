@@ -2,6 +2,7 @@
 import { h } from '../core/dom.js';
 import { numpad } from '../core/numpad.js';
 import { why } from '../core/explain.js';
+import { pic } from '../ui/art.js';
 
 const sideText = (s, c) => [s.x && `${s.x} × ${c}`, s.k && `${s.k} 🐚`].filter(Boolean).join(' + ');
 
@@ -26,8 +27,8 @@ export default {
     const answer = (R.k - L.k) / (L.x - R.x);
 
     const load = s => h('div', { class: 'pan-load' },
-      Array.from({ length: s.x }, () => h('span', { class: 'pan-critter' }, r.critter)),
-      s.k ? h('span', { class: 'weight' }, h('span', { class: 'weight-shell' }, '🐚'), s.k) : null);
+      Array.from({ length: s.x }, () => h('span', { class: 'pan-critter' }, pic(r.critter))),
+      s.k ? h('span', { class: 'weight' }, h('span', { class: 'weight-shell' }, pic('🐚')), s.k) : null);
 
     const beam = h('div', { class: 'beam' },
       h('div', { class: 'pan pan--l' }, load(L), h('div', { class: 'dish' })),

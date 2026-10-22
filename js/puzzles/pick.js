@@ -3,6 +3,8 @@ import { h } from '../core/dom.js';
 import { audio } from '../core/audio.js';
 import { pickTest, pickLabel } from '../core/sequences.js';
 import { why } from '../core/explain.js';
+import { pic } from '../ui/art.js';
+import { t } from '../core/i18n.js';
 
 const FACTS = {
   even: 'Even numbers end in 0, 2, 4, 6 or 8. They split into two equal groups.',
@@ -22,7 +24,7 @@ export default {
     const buttons = new Map();
     const grid = h('div', { class: 'net' }, r.values.map(v => {
       const b = h('button', { class: 'net-fish', 'aria-pressed': 'false', 'aria-label': `${v}`, onclick: () => toggle(v, b) },
-        h('span', { class: 'net-icon', 'aria-hidden': 'true' }, '🐟'), h('span', { class: 'net-num' }, v));
+        h('span', { class: 'net-icon' }, pic('🐟')), h('span', { class: 'net-num' }, v));
       buttons.set(v, b);
       return b;
     }));
@@ -57,6 +59,6 @@ export default {
       api.showWhy(why(r.rule === 'multiple' ? `Counting in ${r.k}s lands on every multiple` : 'How to tell', body));
     }
 
-    root.append(grid, h('div', { class: 'mirror-actions' }, h('button', { class: 'btn', onclick: check }, 'Check my net')));
+    root.append(grid, h('div', { class: 'mirror-actions' }, h('button', { class: 'btn', onclick: check }, t('Check my net'))));
   },
 };

@@ -42,7 +42,7 @@ const STYLE_CAP = { count: 20, groups: 40, squares: 100, triangle: 45 };
 const DRAWS = new Set(['build', 'predict', 'rule']);
 const capFor = (r, band) => (DRAWS.has(r.type) && STYLE_CAP[r.style]) || BAND_CAP[band] || 1000;
 // How far numbers may grow past the template. Builds cost one press per step, so they grow least.
-const GROWTH = { build: 1.6, predict: 2.5, rule: 2.5, missing: 2.5, oddOne: 2.5 };
+const GROWTH = { build: 1.6, predict: 2.5, rule: 2.5, missing: 2.5, oddOne: 2.5, story: 2.5, table: 2.5 };
 
 // ---------- Sequence rounds: build, predict, missing, oddOne, rule ----------
 
@@ -50,7 +50,7 @@ const GROWTH = { build: 1.6, predict: 2.5, rule: 2.5, missing: 2.5, oddOne: 2.5 
 function span(r) {
   switch (r.type) {
     case 'build': return [r.from, r.from + r.show];
-    case 'predict': return [r.from, r.ask];
+    case 'predict': case 'story': case 'table': return [r.from, r.ask];
     case 'rule': return [r.from, r.from + r.show - 1];
     default: return [r.from, r.from + r.count - 1]; // missing, oddOne
   }
@@ -88,7 +88,7 @@ function slides(s) {
 function place(c, r, R) {
   // Hand-written cards use n-formulas, which hold for any starting pool.
   if (slides(c.seq) || c.cards || c.nth) c.from = int(R, 1, r.from + 3);
-  if (c.type === 'predict') {
+  if (c.type === 'predict' || c.type === 'story' || c.type === 'table') {
     const jump = r.ask - (r.from + r.show - 1);
     const lo = EASE < 0 ? Math.max(1, jump - 2) : EASE > 0 ? jump : Math.max(1, jump - 1);
     const hi = EASE < 0 ? Math.max(1, jump - 1) : EASE > 0 ? jump + 2 : jump + 1;
@@ -296,12 +296,27 @@ function varyPick(r, R) {
   return r;
 }
 
+// ---------- Stick shapes and stories ----------
+
+function varySticks(r, R) {
+  // The shape stays; how far ahead the question asks moves with the difficulty.
+  const near = r.show + 1;
+  const lo = EASE < 0 ? near : Math.max(near, r.ask - 1);
+  const hi = EASE < 0 ? Math.max(near, r.ask - 1) : EASE > 0 ? r.ask + 3 : r.ask + 1;
+  return { ...r, ask: int(R, lo, hi) };
+}
+
+const NAMES = ['Mia', 'Omar', 'Lena', 'Kai', 'Zara', 'Leo', 'Aya', 'Sam', 'Noor', 'Theo', 'Ivy', 'Yusuf'];
+function varyStory(r, R, band) {
+  return { ...varySeq(r, R, band), name: pickR(R, NAMES) };
+}
+
 // ---------- Registry ----------
 
 const VARY = {
   build: varySeq, predict: varySeq, missing: varySeq, oddOne: varySeq, rule: varySeq,
   shapes: varyShapes, sort: varySort, balance: varyBalance, machine: varyMachine, mirror: varyMirror,
-  twins: varyTwins, pick: varyPick,
+  twins: varyTwins, pick: varyPick, sticks: varySticks, story: varyStory, table: varySeq,
 };
 
 export function vary(round, R, band, { ease = 0 } = {}) {

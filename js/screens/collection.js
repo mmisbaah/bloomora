@@ -1,16 +1,18 @@
 import { h } from '../core/dom.js';
 import * as S from '../core/state.js';
 import { ALL_WORLDS, LEVEL_COUNT, MAX_STARS } from '../data/worlds.js';
-import { muteButton, pearlStat, confirmBox } from '../ui/widgets.js';
+import {pearlStat, confirmBox } from '../ui/widgets.js';
+import { settingsButton } from '../ui/settings.js';
 import { pager } from '../ui/pager.js';
 import { toast } from '../core/fx.js';
+import { pic } from '../ui/art.js';
 
 function critterCard(w) {
   const recs = w.levels.map(l => S.levelRecord(l.id));
   const cleared = recs.every(Boolean);
   const perfect = cleared && recs.every(r => r.stars === 3);
   return h('article', { class: `critter panel${cleared ? '' : ' locked'}${perfect ? ' gold' : ''}` },
-    h('div', { class: 'critter-emoji', 'aria-hidden': 'true' }, w.reward.emoji),
+    h('div', { class: 'critter-emoji' }, pic(w.reward.emoji)),
     h('h3', {}, cleared ? w.reward.name : 'Still hiding'),
     h('p', {}, cleared ? w.reward.line : `Clear ${w.name} to meet this friend.`),
     perfect ? h('span', { class: 'badge' }, 'Golden') : null);
@@ -38,7 +40,7 @@ export function collectionScreen(app, _params, nav) {
           onOk: () => { S.resetProgress(); toast('Progress cleared'); nav.collection(); },
         }),
       }, '♻️'),
-      muteButton()),
+      settingsButton()),
     pages.el));
   pages.layout();
 }

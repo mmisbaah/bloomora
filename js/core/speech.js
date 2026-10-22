@@ -34,6 +34,7 @@ export function speak(text) {
     const u = new SpeechSynthesisUtterance(speakable(text));
     u.rate = 0.92;
     u.pitch = 1.15;
+    u.lang = S.getState().lang === 'ar' ? 'ar' : 'en';
     synth.speak(u);
   } catch (e) { /* speech is optional */ }
 }

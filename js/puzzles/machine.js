@@ -86,6 +86,7 @@ export default {
         h('p', { class: 'sub-prompt' }, 'Bonus: which secret rule is inside the machine?'),
         h('div', { class: 'cards' }, cards.map(c => {
           const b = h('button', { class: 'rule-card', onclick: () => choose(c, b) }, `In ${c.text}`);
+          b.bloomoraOk = c.ok; // read by automated tests
           return b;
         })));
       api.say('Great number! Now name the rule.', 'good');

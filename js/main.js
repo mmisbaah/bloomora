@@ -3,6 +3,8 @@ import { audio } from './core/audio.js';
 import { startBubbles, initConfetti } from './core/fx.js';
 import * as S from './core/state.js';
 import { closeOverlay } from './ui/widgets.js';
+import { applyTextSize } from './ui/settings.js';
+import { applyLang } from './core/i18n.js';
 import { titleScreen } from './screens/title.js';
 import { mapScreen } from './screens/map.js';
 import { levelScreen } from './screens/level.js';
@@ -11,21 +13,43 @@ import { bandsScreen } from './screens/bands.js';
 import { guideScreen } from './screens/guide.js';
 import { playersScreen } from './screens/players.js';
 import { shopScreen } from './screens/shop.js';
+import { makerScreen } from './screens/maker.js';
 
 const app = document.getElementById('app');
 let cleanup = null;
 let lastScreen = null;
+let current = null;
 
 function show(screen, params = {}) {
   if (screen !== guideScreen) lastScreen = [screen, params];
+  current = [screen, params];
   cleanup?.();
   cleanup = null;
   closeOverlay();
   app.replaceChildren();
   window.scrollTo(0, 0);
   audio.muted = S.getState().muted; // each player keeps their own sound setting
+  syncMusic();
+  applyTextSize();
+  applyLang();
   cleanup = screen(app, params, nav) || null;
 }
+
+// Browsers only allow audio after a tap, so music waits for the first one.
+let heardTap = false;
+function syncMusic() {
+  const st = S.getState();
+  if (heardTap && st.music && !st.muted) audio.startMusic();
+  else audio.stopMusic();
+}
+window.addEventListener('pointerdown', () => { if (!heardTap) { heardTap = true; syncMusic(); } }, { once: true });
+document.addEventListener('visibilitychange', () => (document.hidden ? audio.stopMusic() : syncMusic()));
+
+window.addEventListener('bloomora:lang', () => current && show(...current));
+
+// Show keyboard shortcut numbers only to children who are using a keyboard.
+window.addEventListener('keydown', e => { if (/^([1-9]|Tab)$/.test(e.key)) document.body.classList.add('kbd-hints'); });
+window.addEventListener('pointerdown', () => document.body.classList.remove('kbd-hints'));
 
 const nav = {
   title: () => show(titleScreen),
@@ -35,12 +59,16 @@ const nav = {
   guide: () => show(guideScreen),
   players: () => show(playersScreen),
   shop: () => show(shopScreen),
+  maker: () => show(makerScreen),
   back: () => (lastScreen && lastScreen[0] !== levelScreen ? show(...lastScreen) : show(mapScreen)),
   level: (worldId, levelIndex) => show(levelScreen, { worldId, levelIndex }),
   free: band => show(levelScreen, { free: band }),
   daily: band => show(levelScreen, { daily: band }),
   practice: band => show(levelScreen, { practice: band }),
 };
+
+// Lets the browser tests jump straight to a screen.
+window.bloomoraNav = nav;
 
 function start(saved) {
   // If storage was unavailable, keep progress that a live update handed over.

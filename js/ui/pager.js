@@ -2,11 +2,16 @@
 // Pages are measured against the real screen and re-measured when the window size changes.
 import { h } from '../core/dom.js';
 import { audio } from '../core/audio.js';
+import { t } from '../core/i18n.js';
 
 export function pager(items, { className = '', label = 'Page' } = {}) {
   const list = h('div', { class: `pager-list ${className}` });
   const prev = h('button', { class: 'pager-btn', 'aria-label': `Previous ${label.toLowerCase()}`, onclick: () => go(page - 1) }, '‹');
-  const next = h('button', { class: 'pager-btn', 'aria-label': `Next ${label.toLowerCase()}`, onclick: () => go(page + 1) }, '›');
+  // The next button says "More" and bobs until the child has turned a page, so the extra
+  // pages don't go unnoticed. It also says how many more items are waiting.
+  const moreCount = h('span', { class: 'pager-more' });
+  const next = h('button', { class: 'pager-btn pager-next', 'aria-label': `Next ${label.toLowerCase()}`, onclick: () => go(page + 1) }, moreCount, '›');
+  let turned = false;
   const dots = h('div', { class: 'pager-dots', 'aria-hidden': 'true' });
   const status = h('span', { class: 'sr-only', 'aria-live': 'polite' });
   const controls = h('div', { class: 'pager-controls' }, prev, dots, next, status);
@@ -41,14 +46,22 @@ export function pager(items, { className = '', label = 'Page' } = {}) {
     dots.replaceChildren(...pages.map((_, i) => h('span', { class: i === page ? 'on' : null })));
     prev.disabled = page === 0;
     next.disabled = page === pages.length - 1;
+    const after = pages.slice(page + 1).reduce((n, p) => n + p.length, 0);
+    moreCount.textContent = after ? t('{n} more', { n: after }) : '';
+    next.classList.toggle('nudge', !turned && after > 0);
     status.textContent = `${label} ${page + 1} of ${pages.length}`;
   }
 
   function go(p) {
     if (p < 0 || p >= pages.length) return;
+    const dir = p > page ? 'left' : 'right';
     page = p;
-    audio.tap();
+    turned = true;
+    audio.bubble();
     show();
+    list.classList.remove('slide-left', 'slide-right');
+    void list.offsetWidth;
+    list.classList.add(`slide-${dir}`);
   }
 
   const schedule = () => {

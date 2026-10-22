@@ -1,60 +1,20 @@
-// Small shared UI pieces: Sprig, the sound toggle, and modal overlays.
+// Small shared UI pieces: Sprig, the pearl counter, and modal overlays.
 import { h } from '../core/dom.js';
-import { audio } from '../core/audio.js';
 import * as S from '../core/state.js';
-import { canSpeak, readAloudOn, stopSpeaking } from '../core/speech.js';
 import { findHat } from '../data/shop.js';
+import { sprigArt } from './art.js';
 
-export function sprig(size = '') {
+export function sprig(size = '', mood = 'calm') {
   const hat = findHat(S.getState().hat);
-  return h('div', { class: `sprig ${size}`, 'aria-hidden': 'true' },
-    hat ? h('span', { class: 'sprig-hat' }, hat.emoji) : h('span', { class: 'sprig-leaf' }),
-    h('span', { class: 'sprig-eye l' }),
-    h('span', { class: 'sprig-eye r' }),
-    h('span', { class: 'sprig-mouth' }));
+  return h('div', { class: `sprig ${size}${hat ? ' has-hat' : ''}`, 'aria-hidden': 'true' },
+    sprigArt(mood),
+    hat ? h('span', { class: 'sprig-hat' }, hat.emoji) : null);
 }
 
-export function muteButton() {
-  const b = h('button', {
-    class: 'icon-btn',
-    onclick() {
-      const muted = !S.getState().muted;
-      S.setMuted(muted);
-      audio.muted = muted;
-      update();
-      if (!muted) audio.tap();
-    },
-  });
-  function update() {
-    const muted = S.getState().muted;
-    b.textContent = muted ? '🔇' : '🔊';
-    b.setAttribute('aria-label', muted ? 'Turn sound on' : 'Turn sound off');
-  }
-  update();
-  return b;
-}
-
-// Toggle for read-aloud. Hidden when the browser has no speech synthesis.
-export function readAloudButton(onChange = () => {}) {
-  if (!canSpeak()) return null;
-  const b = h('button', {
-    class: 'icon-btn',
-    onclick() {
-      const on = !readAloudOn();
-      S.setReadAloud(on);
-      if (!on) stopSpeaking();
-      update();
-      onChange(on);
-    },
-  });
-  function update() {
-    const on = readAloudOn();
-    b.textContent = on ? '🗣️' : '🤐';
-    b.setAttribute('aria-label', on ? 'Turn read-aloud off' : 'Turn read-aloud on');
-    b.setAttribute('aria-pressed', String(on));
-  }
-  update();
-  return b;
+// Change Sprig's face: calm, happy, oops or think.
+export function setMood(sprigEl, mood) {
+  const art = sprigEl?.querySelector('.sprig-art');
+  if (art) art.dataset.mood = mood;
 }
 
 export function pearlStat() {

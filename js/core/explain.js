@@ -1,12 +1,13 @@
 // "Show me why" pictures that appear after a wrong answer. The main one is a jump strip:
 // stones with the jump between each pair labelled (+3, +3, ×2 …), with unknowns shown as "?".
 import { h } from './dom.js';
-import { seqFn, fmt } from './sequences.js';
+import { seqFn, fmt, fmtJump } from './sequences.js';
+import { t } from './i18n.js';
 
 function jumpText(s, a, b) {
   if (s.kind === 'geo') return `×${s.r}`;
   const d = b - a;
-  return d >= 0 ? `+${d}` : `−${-d}`;
+  return d >= 0 ? `+${fmtJump(d, s.format)}` : `−${fmtJump(-d, s.format)}`;
 }
 
 // from..to are pool numbers. hide: pools to show as "?". mark: jumps (by left pool) to highlight.
@@ -17,8 +18,8 @@ export function jumpStrip(seq, from, to, { hide = [], mark = [], hideJumps = [],
   const parts = [];
   for (let n = from; n <= to; n++) {
     parts.push(h('span', { class: `xs-stone${hide.includes(n) ? ' xs-q' : ''}` },
-      h('span', { class: 'xs-pool' }, `Pool ${n}`),
-      hide.includes(n) ? '?' : fmt(val(n))));
+      h('span', { class: 'xs-pool' }, seq.format ? t('Step {n}', { n }) : t('Pool {n}', { n })),
+      hide.includes(n) ? '?' : fmt(val(n), seq.format)));
     if (n < to) {
       const unknown = hideJumps.includes(n);
       parts.push(h('span', { class: `xs-jump${mark.includes(n) ? ' xs-mark' : ''}` },

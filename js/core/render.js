@@ -1,5 +1,8 @@
 // Draws a single pool's contents in the style of the current world.
 import { h } from './dom.js';
+import { pic } from '../ui/art.js';
+import { fmt } from './sequences.js';
+import { t } from './i18n.js';
 
 // Above these sizes a drawing stops being countable, so show the number instead.
 const LIMITS = { count: 20, groups: 40, squares: 100, triangle: 45 };
@@ -22,14 +25,14 @@ export function renderTerm(value, r) {
   switch (pickStyle(value, r)) {
     case 'count':
       return h('div', { class: 't-count' },
-        Array.from({ length: value }, (_, i) => h('span', { style: { animationDelay: `${i * 25}ms` } }, r.item)));
+        Array.from({ length: value }, (_, i) => h('span', { style: { animationDelay: `${i * 25}ms` } }, pic(r.item))));
     case 'groups': {
       const size = r.group || r.seq?.d || 3;
       const full = Math.floor(value / size);
       const rest = value % size;
       const groups = Array.from({ length: full }, (_, i) =>
-        h('span', { class: 't-group', style: { animationDelay: `${i * 50}ms` } }, r.item.repeat(size)));
-      if (rest) groups.push(h('span', { class: 't-group' }, r.item.repeat(rest)));
+        h('span', { class: 't-group', style: { animationDelay: `${i * 50}ms` } }, Array.from({ length: size }, () => pic(r.item))));
+      if (rest) groups.push(h('span', { class: 't-group' }, Array.from({ length: rest }, () => pic(r.item))));
       return h('div', { class: 't-groups' }, groups);
     }
     case 'squares': {
@@ -47,13 +50,13 @@ export function renderTerm(value, r) {
         Array.from({ length: rows }, (_, i) => h('div', { class: 't-tri-row' }, Array.from({ length: i + 1 }, () => h('i')))));
     }
     default:
-      return h('div', { class: 't-number' }, value);
+      return h('div', { class: 't-number' }, fmt(value, r.seq?.format));
   }
 }
 
 export function poolCard(n, value, r) {
   return h('div', { class: 'pool' },
-    h('div', { class: 'pool-label' }, `Pool ${n}`),
+    h('div', { class: 'pool-label' }, t('Pool {n}', { n })),
     h('div', { class: 'pool-body' }, renderTerm(value, r)),
-    h('div', { class: 'pool-count' }, `${value} ${value === 1 ? r.itemName : r.itemPlural}`));
+    h('div', { class: 'pool-count' }, r.seq?.format ? r.itemPlural || '' : `${value} ${value === 1 ? r.itemName : r.itemPlural}`));
 }

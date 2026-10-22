@@ -1,6 +1,7 @@
 // Reflect a tile picture across the mirror line by tapping cells on the empty side.
 import { h } from '../core/dom.js';
 import { audio } from '../core/audio.js';
+import { t } from '../core/i18n.js';
 
 export default {
   id: 'mirror',
@@ -88,6 +89,6 @@ export default {
       h('div', { class: 'mirror-wrap' }, grid, h('div', { class: `mirror-line mirror-line--${axis}`, 'aria-hidden': 'true' })),
       h('div', { class: 'mirror-actions' },
         h('button', { class: 'btn btn--ghost btn--small', onclick: clearAll }, 'Clear'),
-        h('button', { class: 'btn', onclick: verify }, 'Check reflection')));
+        h('button', { class: 'btn', onclick: verify }, t('Check reflection'))));
   },
 };

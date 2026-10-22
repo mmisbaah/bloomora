@@ -2,6 +2,7 @@
 import { h, shuffle, replay } from '../core/dom.js';
 import { audio } from '../core/audio.js';
 import { why } from '../core/explain.js';
+import { pic } from '../ui/art.js';
 
 const ordered = r => [...r.values].sort((a, b) => (r.desc ? b - a : a - b));
 
@@ -23,7 +24,7 @@ export default {
     const line = h('div', { class: 'sort-line' }, order.map(() => h('div', { class: 'sort-spot' })));
     const pool = h('div', { class: 'sort-pool' }, start.map(v => {
       const b = h('button', { class: 'pebble', 'aria-label': `${v}`, onclick: () => tap(v, b) },
-        h('span', { class: 'pebble-critter' }, critter),
+        h('span', { class: 'pebble-critter' }, pic(critter)),
         h('span', { class: 'pebble-num' }, v));
       return b;
     }));
@@ -33,7 +34,7 @@ export default {
       if (v === order[pos]) {
         audio.tap();
         line.children[pos].append(h('div', { class: 'pebble pebble--placed pop-in' },
-          h('span', { class: 'pebble-critter' }, critter),
+          h('span', { class: 'pebble-critter' }, pic(critter)),
           h('span', { class: 'pebble-num' }, v)));
         b.classList.add('gone');
         b.disabled = true;

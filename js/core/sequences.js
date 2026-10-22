@@ -19,7 +19,9 @@ export function seqFn(s) {
 
 export function hintFor(s) {
   switch (s.kind) {
-    case 'arith': return s.d > 0 ? `Each pool adds ${s.d}.` : `Each pool takes away ${-s.d}.`;
+    case 'arith':
+      if (s.format) return s.d > 0 ? `Each step adds ${fmtJump(s.d, s.format)}.` : `Each step takes away ${fmtJump(-s.d, s.format)}.`;
+      return s.d > 0 ? `Each pool adds ${s.d}.` : `Each pool takes away ${-s.d}.`;
     case 'geo': return `Each pool is ${s.r} times the one before.`;
     case 'square': return 'Pool n is an n × n square. Pool 4 is 4 × 4 = 16.';
     case 'cube': return 'Pool n is an n × n × n cube. Pool 2 is 2 × 2 × 2 = 8.';
@@ -109,8 +111,32 @@ export function pickLabel(rule, k) {
   return `multiple of ${k}`;
 }
 
-// Numbers as children read them: a real minus sign for negatives.
-export const fmt = n => (n < 0 ? `−${-n}` : `${n}`);
+// Numbers as children read them: a real minus sign for negatives. Some sequences store whole
+// numbers but show them as a clock time (minutes), money (cents), tenths or halves, so every
+// answer stays an exact integer underneath.
+const pad2 = n => String(n).padStart(2, '0');
+export function fmt(n, format) {
+  if (n < 0) return `−${fmt(-n, format)}`;
+  switch (format) {
+    case 'time': return `${Math.floor(n / 60) % 12 || 12}:${pad2(n % 60)}`;
+    case 'money': return `$${Math.floor(n / 100)}.${pad2(n % 100)}`;
+    case 'cents': return `${n}¢`;
+    case 'tenth': return `${Math.floor(n / 10)}.${n % 10}`;
+    case 'half': return n % 2 ? `${n > 1 ? Math.floor(n / 2) : ''}½` : `${n / 2}`;
+    default: return `${n}`;
+  }
+}
+
+// A jump written in the same units: "15 minutes", "25¢", "0.3", "½".
+export function fmtJump(d, format) {
+  switch (format) {
+    case 'time': return d % 60 ? `${d} minutes` : `${d / 60} hour${d === 60 ? '' : 's'}`;
+    case 'money': return d < 100 ? `${d}¢` : fmt(d, 'money');
+    case 'cents': return `${d}¢`;
+    case 'tenth': case 'half': return fmt(d, format);
+    default: return `${d}`;
+  }
+}
 
 // Rule cards written as an nth-term formula, e.g. "Pool n has 3n + 1".
 export function nthCards(s) {

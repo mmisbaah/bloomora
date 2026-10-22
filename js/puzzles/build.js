@@ -4,6 +4,7 @@ import { audio } from '../core/audio.js';
 import { seqFn, hintFor } from '../core/sequences.js';
 import { poolCard, renderTerm } from '../core/render.js';
 import { jumpStrip, why } from '../core/explain.js';
+import { t as tr } from '../core/i18n.js';
 
 // Each mode turns "number of presses" (k) into a pool value.
 const MODES = {
@@ -43,12 +44,12 @@ export default {
     for (let n = r.from; n < t; n++) pools.append(poolCard(n, f(n), r));
     const body = h('div', { class: 'pool-body' });
     const count = h('div', { class: 'pool-count' });
-    const buildCard = h('div', { class: 'pool pool--build' }, h('div', { class: 'pool-label' }, `Pool ${t}`), body, count);
+    const buildCard = h('div', { class: 'pool pool--build' }, h('div', { class: 'pool-label' }, tr('Pool {n}', { n: t })), body, count);
     pools.append(buildCard);
 
     const minus = h('button', { class: 'btn btn--ghost btn--small', 'aria-label': 'Take one away', onclick: () => set(k - 1) }, '−');
     const plus = h('button', { class: 'btn btn--kelp btn--small', onclick: () => set(k + 1) });
-    const check = h('button', { class: 'btn', onclick: verify }, 'Check');
+    const check = h('button', { class: 'btn', onclick: verify }, tr('Check'));
 
     function draw() {
       const v = mode.value(k, r);

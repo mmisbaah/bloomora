@@ -11,6 +11,11 @@ const SQUARE = { kind: 'square' };
 const CUBE = { kind: 'cube' };
 const TRI = { kind: 'tri' };
 const FIB = { kind: 'fib' };
+const TIME = (a, d) => ({ kind: 'arith', a, d, format: 'time' });
+const MONEY = (a, d) => ({ kind: 'arith', a, d, format: 'money' });
+const CENTS = (a, d) => ({ kind: 'arith', a, d, format: 'cents' });
+const TENTHS = (a, d) => ({ kind: 'arith', a, d, format: 'tenth' });
+const HALVES = (a, d) => ({ kind: 'arith', a, d, format: 'half' });
 const TILES = { seq: SQUARE, style: 'squares', item: '▪', itemName: 'tile', itemPlural: 'tiles' };
 
 export const WORLDS = [
@@ -20,6 +25,7 @@ export const WORLDS = [
     name: 'Tidepool Terraces',
     crest: '🐚', color: 'var(--coral)',
     blurb: 'Repeating parades, counting on by one, and lining things up.',
+    story: { open: 'The tidepools have gone dark and quiet. Pip the Hermit Crab is fast asleep in a shell. Patterns will wake the pools up!', close: 'The terraces are glowing again.' },
     defaults: { item: '🐚', itemName: 'shell', itemPlural: 'shells', style: 'count' },
     reward: { emoji: '🦀', name: 'Pip the Hermit Crab', line: 'Pip trades shells with anyone who can count them.' },
     levels: [
@@ -87,6 +93,7 @@ export const WORLDS = [
     name: 'Shell Shore',
     crest: '🏖️', color: 'var(--sand)',
     blurb: 'Counting in 2s, 5s and 10s, and numbers up to 20.',
+    story: { open: 'Skip the Shrimp has curled up under the sand. Count along the shore to wake Skip up!', close: 'The whole shore is sparkling.' },
     defaults: { item: '🐚', itemName: 'shell', itemPlural: 'shells', style: 'count' },
     reward: { emoji: '🦐', name: 'Skip the Shrimp', line: 'Skip only ever hops in twos, fives or tens.' },
     levels: [
@@ -141,10 +148,55 @@ export const WORLDS = [
     ],
   },
   {
+    id: 'cove', band: 'minnows', num: 0,
+    name: 'Coin Cove',
+    crest: '🪙', color: 'var(--sand)',
+    blurb: 'Counting coins, little stories, and your first bar graphs.',
+    story: { open: 'Ollie the Otter has dropped his coins all over the cove. Help him count them back!', close: 'Every coin is back where it belongs.' },
+    defaults: { item: '🐚', itemName: 'shell', itemPlural: 'shells', style: 'number', choices: true },
+    reward: { emoji: '🦦', name: 'Ollie the Otter', line: 'Ollie keeps his favourite pebble in a pocket and counts it every night.' },
+    levels: [
+      {
+        id: 'cove-1', name: 'Penny Steps',
+        skill: 'Counting coins in 2s, 5s and 10s (cents)',
+        std: ['CC 2.MD.C.8*', 'Eng Y1 (money)'],
+        intro: 'Coins count in jumps. Five, ten, fifteen … can you hear the pattern?',
+        rounds: [
+          { type: 'missing', seq: CENTS(5, 5), from: 1, count: 5, gap: 3 },
+          { type: 'predict', seq: CENTS(10, 10), from: 1, show: 3, ask: 4, itemName: '', itemPlural: '' },
+          { type: 'oddOne', seq: CENTS(2, 2), from: 1, count: 5 },
+        ],
+      },
+      {
+        id: 'cove-2', name: 'Tide Tales',
+        skill: 'Simple pattern stories: adding the same amount each day',
+        std: ['CC 1.OA.A.1*', 'Eng Y1'],
+        intro: 'Sprig has some stories for you. Each one hides a pattern.',
+        rounds: [
+          { type: 'story', plot: 'jar', seq: arith(2, 2), from: 1, show: 3, ask: 4 },
+          { type: 'story', plot: 'kelp', seq: arith(3, 1), from: 1, show: 3, ask: 5 },
+          { type: 'story', plot: 'climb', seq: arith(5, 5), from: 1, show: 3, ask: 4 },
+        ],
+      },
+      {
+        id: 'cove-3', name: 'Shell Charts',
+        skill: 'Reading a bar graph and a simple table; first stick shapes',
+        std: ['CC 1.MD.C.4*', 'Eng Y2 (statistics)*'],
+        intro: 'A graph is a picture of numbers. Taller bars mean more!',
+        rounds: [
+          { type: 'table', mode: 'graph', seq: arith(2, 2), from: 1, show: 3, ask: 4, cols: ['Day', 'Shells'] },
+          { type: 'table', seq: arith(5, 5), from: 1, show: 3, ask: 4, cols: ['Hands', 'Fingers'] },
+          { type: 'sticks', shape: 'triangles', show: 2, ask: 3 },
+        ],
+      },
+    ],
+  },
+  {
     id: 'boss-minnows', band: 'minnows', boss: true, num: '★',
     name: 'Tidepool Parade',
     crest: '🎏', color: 'var(--coral)',
     blurb: 'Six mixed puzzles from the Minnows worlds. No clock, so take your time.',
+    story: { open: 'The tidepool parade is about to start, but Puff the Pufferfish is snoozing. Show everyone what you’ve learned!', close: 'What a parade!' },
     defaults: { item: '🐚', itemName: 'shell', itemPlural: 'shells', style: 'count' },
     reward: { emoji: '🐡', name: 'Puff the Pufferfish', line: 'Puff gets very round with pride when you finish the parade.' },
     levels: [
@@ -171,6 +223,7 @@ export const WORLDS = [
     name: 'Skip-Step Reef',
     crest: '🪸', color: 'var(--kelp)',
     blurb: 'Skip counting in 3s, 4s, 5s, 8s, 50s and 100s.',
+    story: { open: 'The coral reef has lost its colour. Dot the Clownfish is hiding. Skip-count to bring the colours back!', close: 'The reef is bright pink, orange and green again.' },
     defaults: { item: '🪸', itemName: 'coral', itemPlural: 'corals', style: 'groups' },
     reward: { emoji: '🐠', name: 'Dot the Clownfish', line: 'Dot can count corals in threes, fours and fives without stopping.' },
     levels: [
@@ -253,6 +306,7 @@ export const WORLDS = [
     name: 'Doubler Docks',
     crest: '⚓', color: 'var(--sand)',
     blurb: 'Times-table machines, missing factors and upright mirror lines.',
+    story: { open: 'The dock machines have stopped and Bolt the Seal is napping on the pier. Get the machines humming!', close: 'Every machine on the docks is running.' },
     defaults: { item: '🦀', itemName: 'crab', itemPlural: 'crabs', style: 'number' },
     reward: { emoji: '🦭', name: 'Bolt the Seal', line: 'Bolt runs the dock machines and never forgets a times table.' },
     levels: [
@@ -314,10 +368,67 @@ export const WORLDS = [
     ],
   },
   {
+    id: 'market', band: 'turtles', num: 0,
+    name: 'Market Bay',
+    crest: '⛵', color: 'var(--kelp)',
+    blurb: 'Money, clocks, halves and growing stick shapes.',
+    story: { open: 'The market clock has stopped and Fifi the Flamingo is in a flap. Get the bay ticking again!', close: 'Tick, tock. Market Bay is open for business.' },
+    defaults: { item: '🦀', itemName: 'crab', itemPlural: 'crabs', style: 'number' },
+    reward: { emoji: '🦩', name: 'Fifi the Flamingo', line: 'Fifi runs the market clock and is never, ever late.' },
+    levels: [
+      {
+        id: 'mkt-1', name: 'Shell Shop',
+        skill: 'Counting money in 25¢ and 50¢ steps',
+        std: ['CC 2.MD.C.8', 'Eng Y2 (money)'],
+        intro: 'Everything in the shell shop costs quarters. Count the money as it adds up.',
+        rounds: [
+          { type: 'missing', seq: MONEY(25, 25), from: 1, count: 5, gap: 3 },
+          { type: 'predict', seq: MONEY(50, 50), from: 1, show: 3, ask: 5, itemName: '', itemPlural: '' },
+          { type: 'oddOne', seq: MONEY(25, 25), from: 1, count: 6 },
+        ],
+      },
+      {
+        id: 'mkt-2', name: 'Tide Clock',
+        skill: 'Clock times in 5, 15, 20 and 30 minute steps',
+        std: ['CC 2.MD.C.7', 'Eng Y2–Y3 (time)'],
+        intro: 'The ferry and the tide keep to the clock. Count on in minutes.',
+        rounds: [
+          { type: 'missing', seq: TIME(480, 15), from: 1, count: 5, gap: 3 },
+          { type: 'predict', seq: TIME(540, 30), from: 1, show: 3, ask: 5, itemName: '', itemPlural: '' },
+          { type: 'story', plot: 'ferry', seq: TIME(600, 20), from: 1, show: 3, ask: 5 },
+          { type: 'oddOne', seq: TIME(420, 5), from: 1, count: 6 },
+        ],
+      },
+      {
+        id: 'mkt-3', name: 'Half Tide',
+        skill: 'Counting on in halves',
+        std: ['Eng Y2–Y3 (fractions)*', 'CC 3.NF.A.2*'],
+        intro: 'Half a step, then another half. Two halves make a whole!',
+        rounds: [
+          { type: 'missing', seq: HALVES(1, 1), from: 1, count: 6, gap: 4 },
+          { type: 'oddOne', seq: HALVES(1, 1), from: 1, count: 6 },
+          { type: 'predict', seq: HALVES(3, 1), from: 1, show: 3, ask: 5, itemName: '', itemPlural: '' },
+        ],
+      },
+      {
+        id: 'mkt-4', name: 'Stick Squares',
+        skill: 'Growing stick patterns: squares and triangles in a row',
+        std: ['CC 4.OA.C.5*', 'Eng Y3*'],
+        intro: 'Fifi builds fences out of sticks. Each new square shares a side!',
+        rounds: [
+          { type: 'sticks', shape: 'squares', show: 3, ask: 4 },
+          { type: 'sticks', shape: 'triangles', show: 3, ask: 5 },
+          { type: 'story', plot: 'tables', seq: arith(6, 4), from: 1, show: 3, ask: 5 },
+        ],
+      },
+    ],
+  },
+  {
     id: 'boss-turtles', band: 'turtles', boss: true, num: '★',
     name: 'Reef Relay',
     crest: '🏁', color: 'var(--kelp)',
     blurb: 'Six mixed puzzles from the Turtles worlds. No clock.',
+    story: { open: 'Finn the Reef Shark wants a relay race, but first he needs waking up. Ready, set, go!', close: 'You won the relay!' },
     defaults: { item: '🪸', itemName: 'coral', itemPlural: 'corals', style: 'number' },
     reward: { emoji: '🦈', name: 'Finn the Reef Shark', line: 'Finn is friendly, fast, and loves a relay race.' },
     levels: [
@@ -344,6 +455,7 @@ export const WORLDS = [
     name: 'Current Machines',
     crest: '⚙️', color: 'var(--sky)',
     blurb: 'Rules that don’t start at zero, tables to 12 × 12, and two-step machines.',
+    story: { open: 'Gizmo the Octopus built the current machines, then fell asleep in one. Find the rules and switch them back on!', close: 'The currents are flowing again.' },
     defaults: { item: '🦀', itemName: 'crab', itemPlural: 'crabs', style: 'number' },
     reward: { emoji: '🐙', name: 'Gizmo the Octopus', line: 'Gizmo built every current machine with all eight arms.' },
     levels: [
@@ -423,6 +535,7 @@ export const WORLDS = [
     name: 'Mirror Lagoon',
     crest: '🪞', color: 'var(--lilac)',
     blurb: 'Mirror lines in any direction, plus square and cube numbers.',
+    story: { open: 'The mirror lagoon is cloudy and Glim the Jellyfish can’t see a thing. Make every picture match its reflection!', close: 'The water is as clear as glass.' },
     defaults: { item: '🌿', itemName: 'kelp leaf', itemPlural: 'kelp leaves', style: 'count' },
     reward: { emoji: '🪼', name: 'Glim the Jellyfish', line: 'Glim is perfectly symmetrical and very proud of it.' },
     levels: [
@@ -487,10 +600,67 @@ export const WORLDS = [
     ],
   },
   {
+    id: 'harbor', band: 'dolphins', num: 0,
+    name: 'Harbor Charts',
+    crest: '🧭', color: 'var(--sky)',
+    blurb: 'Tables, bar graphs, decimals and stories from the harbor.',
+    story: { open: 'Captain Claw’s tide charts blew into the water. Help redraw them!', close: 'The charts are dry and every number is back.' },
+    defaults: { item: '🦀', itemName: 'crab', itemPlural: 'crabs', style: 'number' },
+    reward: { emoji: '🦞', name: 'Captain Claw', line: 'Captain Claw reads the tide charts out loud, in a very deep voice.' },
+    levels: [
+      {
+        id: 'hbr-1', name: 'Tide Tables',
+        skill: 'Finding the rule in a table or bar graph',
+        std: ['CC 5.OA.B.3', 'CC 4.OA.C.5', 'Eng Y4 (statistics)'],
+        intro: 'Every chart tells a pattern. Read it row by row.',
+        rounds: [
+          { type: 'table', seq: arith(4, 6), from: 1, show: 4, ask: 7, cols: ['Week', 'Pearls'] },
+          { type: 'table', mode: 'graph', seq: arith(3, 4), from: 1, show: 4, ask: 6, cols: ['Day', 'Fish'] },
+          { type: 'story', plot: 'kelp', seq: arith(12, 7), from: 1, show: 3, ask: 7 },
+        ],
+      },
+      {
+        id: 'hbr-2', name: 'Decimal Drift',
+        skill: 'Counting in tenths (decimals)',
+        std: ['CC 4.NF.C.6', 'Eng Y3–Y4 (tenths)'],
+        intro: 'The buoys drift a tenth at a time. 0.3, 0.5, 0.7 … what comes next?',
+        rounds: [
+          { type: 'missing', seq: TENTHS(3, 2), from: 1, count: 6, gap: 4 },
+          { type: 'predict', seq: TENTHS(5, 3), from: 1, show: 3, ask: 5, itemName: '', itemPlural: '' },
+          { type: 'oddOne', seq: TENTHS(2, 4), from: 1, count: 6 },
+          { type: 'table', seq: TENTHS(5, 5), from: 1, show: 4, ask: 6, cols: ['Bucket', 'Litres'] },
+        ],
+      },
+      {
+        id: 'hbr-3', name: 'Stick Houses',
+        skill: 'Shape patterns: working out a far shape without drawing it',
+        std: ['CC 4.OA.C.5', 'Eng Y5*'],
+        intro: 'Too many sticks to count! Find the rule and jump straight there.',
+        rounds: [
+          { type: 'sticks', shape: 'houses', show: 3, ask: 6, counts: false },
+          { type: 'sticks', shape: 'squares', show: 3, ask: 10, counts: false },
+          { type: 'sticks', shape: 'triangles', show: 3, ask: 8 },
+        ],
+      },
+      {
+        id: 'hbr-4', name: 'Harbor Tales',
+        skill: 'Pattern word problems with money, depth and seats',
+        std: ['CC 4.OA.A.3', 'CC 4.MD.A.2'],
+        intro: 'Busy days at the harbor. Each story has a pattern hiding in it.',
+        rounds: [
+          { type: 'story', plot: 'piggy', seq: MONEY(150, 75), from: 1, show: 3, ask: 6 },
+          { type: 'story', plot: 'sub', seq: arith(80, -6), from: 1, show: 3, ask: 6 },
+          { type: 'story', plot: 'tables', seq: arith(6, 4), from: 1, show: 3, ask: 10 },
+        ],
+      },
+    ],
+  },
+  {
     id: 'boss-dolphins', band: 'dolphins', boss: true, num: '★',
     name: 'Current Rush',
     crest: '🌀', color: 'var(--sky)',
     blurb: 'Six mixed puzzles against the tide clock.',
+    story: { open: 'Echo the Dolphin is dreaming of a race against the tide. Beat the clock to wake Echo!', close: 'Faster than the tide!' },
     defaults: { item: '🐚', itemName: 'shell', itemPlural: 'shells', style: 'number' },
     reward: { emoji: '🐬', name: 'Echo the Dolphin', line: 'Echo can hear a pattern from the other side of the lagoon.' },
     levels: [
@@ -519,6 +689,7 @@ export const WORLDS = [
     name: 'Algebra Atoll',
     crest: '🏝️', color: 'var(--lilac)',
     blurb: 'Linear sequences, the nth term, balancing equations and triangular numbers.',
+    story: { open: 'The atoll’s equations have washed away. Atlas the Sea Turtle is sleeping under the sand. Solve them to wake Atlas!', close: 'Every equation is back where it belongs.' },
     defaults: { item: '🦀', itemName: 'crab', itemPlural: 'crabs', style: 'number' },
     reward: { emoji: '🐢', name: 'Atlas the Sea Turtle', line: 'Atlas has carried the atoll’s equations on his shell for a hundred years.' },
     levels: [
@@ -615,10 +786,55 @@ export const WORLDS = [
     ],
   },
   {
+    id: 'yard', band: 'orcas', num: 0,
+    name: 'Shipwright Yard',
+    crest: '⚓', color: 'var(--lilac)',
+    blurb: 'Far-off shapes, tricky stories and charts that double or shrink.',
+    story: { open: 'Pebble the Penguin is building a fleet, but the plans are in pieces. Work out the numbers so the boats can sail.', close: 'The fleet is ready. Pebble waves you off from the dock.' },
+    defaults: { item: '🦀', itemName: 'crab', itemPlural: 'crabs', style: 'number' },
+    reward: { emoji: '🐧', name: 'Pebble the Penguin', line: 'Pebble builds boats from driftwood and counts every single stick.' },
+    levels: [
+      {
+        id: 'yard-1', name: 'Stick Rules',
+        skill: 'Using a rule to reach far-off shapes in a stick pattern',
+        std: ['Eng KS3 (linear sequences)', 'CC 6.EE.C.9*'],
+        intro: 'Shape 20 has a lot of sticks. A rule gets you there in one step.',
+        rounds: [
+          { type: 'sticks', shape: 'houses', show: 3, ask: 20, counts: false },
+          { type: 'sticks', shape: 'squares', show: 2, ask: 25, counts: false },
+          { type: 'table', seq: arith(5, 4), from: 1, show: 3, ask: 15, cols: ['Shape', 'Sticks'] },
+        ],
+      },
+      {
+        id: 'yard-2', name: 'Deep Stories',
+        skill: 'Word problems with growing, shrinking and doubling patterns',
+        std: ['CC 7.EE.B.3*', 'Eng Y6'],
+        intro: 'These stories go deep. Read carefully: some patterns shrink and some double.',
+        rounds: [
+          { type: 'story', plot: 'jelly', seq: geo(3, 2), from: 1, show: 3, ask: 6 },
+          { type: 'story', plot: 'sub', seq: arith(150, -12), from: 1, show: 3, ask: 10 },
+          { type: 'story', plot: 'climb', seq: arith(18, 22), from: 1, show: 3, ask: 12 },
+        ],
+      },
+      {
+        id: 'yard-3', name: 'Chart Master',
+        skill: 'Reading growing, shrinking and doubling patterns from charts',
+        std: ['CC 6.EE.C.9', 'Eng KS3'],
+        intro: 'Three charts, three kinds of pattern. Which is which?',
+        rounds: [
+          { type: 'table', mode: 'graph', seq: geo(2, 2), from: 1, show: 4, ask: 6, cols: ['Hour', 'Cells'] },
+          { type: 'table', seq: arith(150, -25), from: 1, show: 4, ask: 6, cols: ['Minute', 'Metres'] },
+          { type: 'table', seq: MONEY(25, 15), from: 1, show: 3, ask: 9, cols: ['Week', 'Saved'] },
+        ],
+      },
+    ],
+  },
+  {
     id: 'trench', band: 'orcas', stretch: true, num: 8,
     name: 'Deep Trench',
     crest: '🌌', color: 'var(--danger)',
     blurb: 'Stretch world: doubling, tripling and the Fibonacci spiral.',
+    story: { open: 'Down in the dark, Nyx the Giant Squid sleeps where the strangest patterns grow. Dive in, if you dare!', close: 'The trench glows with doubling light.' },
     defaults: { item: '🌿', itemName: 'kelp leaf', itemPlural: 'kelp leaves', style: 'count' },
     reward: { emoji: '🦑', name: 'Nyx the Giant Squid', line: 'Nyx lives deeper than anyone, where the strangest patterns grow.' },
     levels: [
@@ -677,6 +893,7 @@ export const WORLDS = [
     name: 'Grand Lagoon',
     crest: '🐋', color: 'var(--lilac)',
     blurb: 'Eight mixed puzzles against the tide clock.',
+    story: { open: 'Bloom the Whale wakes only when the whole lagoon is in harmony. This is it: every kind of pattern, all at once.', close: 'The whole lagoon is blooming!' },
     defaults: { item: '🐚', itemName: 'shell', itemPlural: 'shells', style: 'number' },
     reward: { emoji: '🐋', name: 'Bloom the Whale', line: 'Bloom wakes up only when the whole lagoon is in harmony.' },
     levels: [
@@ -701,6 +918,10 @@ export const WORLDS = [
     ],
   },
 ];
+
+// World numbers run in order through the regular worlds; bosses show a star instead.
+let worldNum = 1;
+for (const w of WORLDS) if (!w.boss) w.num = worldNum++;
 
 export const ALL_WORLDS = WORLDS;
 export const findWorld = id => WORLDS.find(w => w.id === id);

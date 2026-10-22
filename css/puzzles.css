@@ -425,3 +425,114 @@ button.stone:hover:not(:disabled) { transform: translateY(-3px); }
   .twin-row { gap: 5px; grid-template-columns: auto repeat(var(--count, 5), minmax(0, 52px)); }
   .twin-stone { font-size: 1.15rem; }
 }
+/* Drawn pieces inside puzzles */
+.parade-item .art { width: 72%; height: 72%; }
+.parade-option .art { width: 70%; height: 70%; }
+.pebble-critter .art, .pan-critter .art { width: 1.6rem; height: 1.6rem; }
+.net-icon .art { width: 1.5rem; height: 1.5rem; }
+.weight-shell .art { width: 1.1rem; height: 1.1rem; }
+.t-count .art { width: 1.25em; height: 1.25em; }
+.t-group .art { width: 1.15em; height: 1.15em; }
+.xs-group .art { width: 1.3rem; height: 1.3rem; }
+
+/* ---------- Puzzle look: each type has its own colour on the stage ---------- */
+.stage { --type: var(--sand); border-top: 5px solid var(--type); }
+.stage-head .eyebrow { color: var(--type); }
+.chip--type { border-color: var(--type); color: var(--foam); background: color-mix(in srgb, var(--type) 22%, transparent); }
+
+/* ---------- Transitions between puzzles ---------- */
+.fit.swim-in { animation: swim-in 0.38s cubic-bezier(.2,.8,.3,1.2); }
+.fit.swim-out { animation: swim-out 0.26s ease-in forwards; }
+@keyframes swim-in { from { opacity: 0; translate: 60px 0; } }
+@keyframes swim-out { to { opacity: 0; translate: -60px 0; } }
+
+/* ---------- Ghost-hand tutorial ---------- */
+.stage { position: relative; }
+.ghost { position: absolute; z-index: 5; pointer-events: none; transition: left 0.9s ease-in-out, top 0.9s ease-in-out; }
+.ghost-hand { position: absolute; left: -6px; top: 4px; font-size: 2.6rem; filter: drop-shadow(0 4px 6px rgba(0,0,0,.4)); opacity: 0.92; }
+.ghost-ring { position: absolute; left: -26px; top: -26px; width: 52px; height: 52px; border-radius: 50%; border: 4px solid var(--sand); opacity: 0; }
+.ghost.tap .ghost-hand { animation: ghost-tap 0.5s ease-out 0.9s; }
+.ghost.tap .ghost-ring { animation: ghost-ring 0.7s ease-out 0.95s; }
+@keyframes ghost-tap { 50% { transform: translateY(8px) scale(0.92); } }
+@keyframes ghost-ring { from { opacity: 0.9; transform: scale(0.4); } to { opacity: 0; transform: scale(1.5); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .fit.swim-in, .fit.swim-out { animation: none; }
+  .ghost { transition: none; }
+}
+
+/* ---------- Stick shapes ---------- */
+.stick-row { display: flex; flex-wrap: wrap; justify-content: center; align-items: stretch; gap: 10px; }
+.stick-card { display: flex; flex-direction: column; align-items: center; justify-content: space-between; gap: 6px; padding: 10px 12px; border-radius: 16px; background: var(--well); border: 2px solid var(--panel-line); }
+.stick-svg { height: 64px; width: auto; max-width: calc(var(--w) * 40px + 16px); overflow: visible; }
+.stick-svg line { stroke: var(--sand); stroke-width: 3.2; stroke-linecap: round; }
+.stick-card--q { border-style: dashed; border-color: var(--sand); justify-content: center; min-width: 96px; }
+.stick-q { font-family: var(--font-display); font-size: var(--step-3); color: var(--sand); line-height: 1; }
+
+/* ---------- Story problems ---------- */
+.story-card { max-width: 640px; margin: 0 auto; padding: 14px 18px; border-radius: 18px; background: var(--well); border: 2px solid var(--panel-line); font-size: var(--step-1); line-height: 1.35; }
+.story-card p { margin: 0 0 8px; }
+.story-lines { list-style: none; margin: 0 0 8px; padding: 0; display: flex; flex-wrap: wrap; gap: 8px; }
+.story-lines li { padding: 6px 12px; border-radius: 12px; background: var(--well-strong); font-weight: 800; }
+.story-ask { font-weight: 800; color: var(--sand); }
+.story-q { display: inline-block; min-width: 2.2em; padding: 0 8px; border-radius: 10px; border: 2px dashed var(--sand); text-align: center; font-family: var(--font-display); }
+
+/* ---------- Tables and graphs ---------- */
+.table-layout { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 18px; }
+.tide-table { border-collapse: separate; border-spacing: 0; font-size: var(--step-1); border-radius: 16px; overflow: hidden; border: 2px solid var(--panel-line); }
+.tide-table th { background: var(--well-strong); padding: 8px 18px; font-family: var(--font-display); font-weight: 400; }
+.tide-table td { padding: 6px 18px; text-align: center; font-weight: 800; border-top: 1px solid var(--panel-line); }
+.tide-table td + td, .tide-table th + th { border-left: 2px solid var(--panel-line); }
+.tide-table .gap-row td { padding: 0; color: var(--mist); }
+.tide-table .ask-row td { background: color-mix(in srgb, var(--sand) 16%, transparent); }
+.table-q { font-family: var(--font-display); color: var(--sand); }
+.graph { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.graph-bars { display: flex; align-items: flex-end; gap: 10px; height: 190px; padding: 0 8px; border-bottom: 3px solid var(--mist); }
+.bar { display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 100%; width: 46px; position: relative; }
+.bar-fill { width: 100%; height: var(--h); border-radius: 10px 10px 0 0; background: var(--type, var(--sky)); }
+.bar-val { font-weight: 800; font-size: var(--step--1); margin-bottom: 3px; }
+.bar-x { position: absolute; bottom: -26px; font-weight: 800; }
+.bar--q .bar-fill { background: transparent; border: 3px dashed var(--sand); border-bottom: 0; }
+.bar--gap { justify-content: center; color: var(--mist); width: 20px; }
+.graph-axis { margin-top: 24px; font-weight: 800; color: var(--mist); font-size: var(--step--1); }
+@media (max-height: 640px) {
+  .graph-bars { height: 130px; }
+  .stick-svg { height: 46px; }
+  .story-card { font-size: var(--step-0); padding: 10px 14px; }
+}
+
+/* ---------- Accessibility: right and wrong never rely on colour alone ---------- */
+.is-right, .is-wrong, .is-fixed { position: relative; }
+.is-right::after, .is-wrong::after, .stone.is-fixed::after {
+  position: absolute; top: -8px; right: -8px; width: 26px; height: 26px; border-radius: 50%;
+  display: grid; place-items: center; font: 900 15px/1 var(--font-body); pointer-events: none;
+}
+.is-right::after, .stone.is-fixed::after { content: '✓'; background: var(--kelp); color: var(--ink); box-shadow: 0 0 0 2px var(--ink); }
+.is-wrong::after { content: '✗'; background: var(--danger); color: var(--ink); box-shadow: 0 0 0 2px var(--ink); }
+.is-wrong { text-decoration: line-through; text-decoration-thickness: 3px; }
+/* Number shortcuts for answer buttons, shown while a keyboard is in use. */
+.kbd-hints .option::before, .kbd-hints .parade-option::before, .kbd-hints .rule-card[data-key]::after {
+  content: attr(data-key); position: absolute; top: 4px; left: 6px; font: 800 12px/1 var(--font-body); color: var(--mist);
+}
+.kbd-hints .option, .kbd-hints .parade-option { position: relative; }
+
+/* Landscape phones: stories, stick shapes and charts sit beside their answer area. */
+@media (max-height: 640px) and (min-width: 640px) {
+  .puzzle--story .fit, .puzzle--sticks .fit {
+    display: grid; grid-template-columns: minmax(0, 1.5fr) auto; align-items: center; gap: 16px;
+  }
+  .table-layout { flex-wrap: nowrap; }
+  .story-card { font-size: var(--step-0); padding: 8px 12px; }
+  .story-card p { margin-bottom: 4px; }
+  .story-lines { gap: 4px; margin-bottom: 4px; }
+  .story-lines li { padding: 3px 10px; }
+  .stick-row { gap: 6px; }
+  .stick-card { padding: 6px 8px; gap: 2px; }
+  .stick-svg { height: 40px; }
+  .stick-q { font-size: var(--step-2); }
+  .tide-table { font-size: var(--step-0); }
+  .tide-table td { padding: 2px 14px; }
+  .tide-table th { padding: 4px 14px; }
+  .graph-bars { height: 120px; }
+  .puzzle--story .options, .puzzle--sticks .options, .puzzle--table .options { grid-template-columns: repeat(2, minmax(72px, 1fr)); }
+}

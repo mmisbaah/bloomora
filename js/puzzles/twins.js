@@ -23,6 +23,7 @@ export default {
 
     const list = h('div', { class: 'cards' }, opts.map(o => {
       const b = h('button', { class: 'rule-card', onclick: () => choose(o, b) }, o.text);
+      b.bloomoraOk = o.ok; // read by automated tests
       return b;
     }));
 

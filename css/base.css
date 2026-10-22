@@ -227,3 +227,33 @@ button:disabled { cursor: not-allowed; }
 .pager-dots { display: flex; gap: 8px; }
 .pager-dots span { width: 12px; height: 12px; border-radius: 50%; background: var(--well-strong); }
 .pager-dots span.on { background: var(--sand); }
+
+/* Pager "more" button: wider pill with a count, bobbing until the first page turn. */
+.pager-next { width: auto; padding: 0 14px; gap: 6px; display: inline-flex; align-items: center; }
+.pager-more { font-size: var(--step--1); font-family: var(--font-display); }
+.pager-more:empty { display: none; }
+.pager-next.nudge { animation: nudge 1.4s ease-in-out infinite; }
+@keyframes nudge { 0%, 100% { transform: translateX(0); } 50% { transform: translateX(6px); } }
+.pager-list.slide-left { animation: slide-left 0.32s ease-out; }
+.pager-list.slide-right { animation: slide-right 0.32s ease-out; }
+@keyframes slide-left { from { transform: translateX(40px); opacity: 0; } }
+@keyframes slide-right { from { transform: translateX(-40px); opacity: 0; } }
+@media (prefers-reduced-motion: reduce) {
+  .pager-next.nudge, .pager-list.slide-left, .pager-list.slide-right { animation: none; }
+}
+
+/* ---------- Right-to-left (Arabic) ----------
+   Text and layout flip, but puzzle boards, number pads and pager arrows stay left-to-right
+   so number patterns read in the order the arrows point. */
+[dir="rtl"] body { font-family: 'Segoe UI', Tahoma, 'Noto Sans Arabic', system-ui, sans-serif; }
+[dir="rtl"] .fit, [dir="rtl"] .numpad, [dir="rtl"] .pager-controls, [dir="rtl"] .xs-strip,
+[dir="rtl"] .maker-row, [dir="rtl"] .trail-box, [dir="rtl"] .round-dots { direction: ltr; }
+[dir="rtl"] .fit .intro, [dir="rtl"] .fit .explain-title, [dir="rtl"] .story-card { direction: rtl; }
+[dir="rtl"] .icon-btn[aria-label^="Back"] { transform: scaleX(-1); }
+[dir="rtl"] .eyebrow { letter-spacing: 0; }
+[dir="rtl"] .logo { direction: ltr; }
+
+/* ---------- Language picker ---------- */
+.lang-picks { display: flex; gap: 6px; }
+.lang-pick { min-height: 40px; padding: 4px 12px; border-radius: 99px; border: 2px solid var(--panel-line); background: transparent; color: var(--foam); font: inherit; font-weight: 800; cursor: pointer; }
+.lang-pick.on { background: var(--kelp); border-color: var(--kelp); color: var(--ink); }
