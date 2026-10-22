@@ -148,6 +148,7 @@ export function levelScreen(app, params, nav) {
   const fitBox = h('div', { class: 'fit' });
   puzzleRoot.append(fitBox);
   const fit = () => {
+    if (!puzzleRoot.isConnected || !puzzleRoot.clientWidth || !puzzleRoot.clientHeight) return;
     fitBox.style.transform = '';
     const s = Math.min(1, puzzleRoot.clientHeight / fitBox.offsetHeight, puzzleRoot.clientWidth / fitBox.scrollWidth);
     if (s < 1) fitBox.style.transform = `scale(${Math.max(0.5, s)})`;
@@ -312,6 +313,7 @@ export function levelScreen(app, params, nav) {
       whyBox?.remove();
       whyBox = el;
       fitBox.append(el);
+      fit();
     };
     api = a;
     puzzleCleanup = P.mount(fitBox, round, a) || null;
@@ -559,6 +561,7 @@ export function levelScreen(app, params, nav) {
       say(t('Follow the outlined step, then check your answer.'), 'hint');
     }
     drawHintBtn();
+    fit();
   }
 
   function askQuit() {
