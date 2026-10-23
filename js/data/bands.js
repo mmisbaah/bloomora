@@ -27,7 +27,7 @@ export const BANDS = [
     color: 'var(--kelp)',
     grades: 'Grades 2–3 (US) · Years 2–3 (England)',
     focus: 'Skip counting in 3s, 4s, 5s, 8s, 50s and 100s, early times tables, finding a missing factor, vertical mirror lines.',
-    settings: { hearts: 4, hintCost: 3, timer: false, speedBonus: false, options: 4, readAloud: false, stars: [0, 2] },
+    settings: { hearts: 4, hintCost: 0, timer: false, speedBonus: false, options: 4, readAloud: false, stars: [0, 2] },
     why: [
       'England expects counting in steps of 2, 3 and 5 in Year 2, then multiples of 4, 8, 50 and 100 in Year 3. Common Core 2.NBT.A.2 adds skip counting by 5s, 10s and 100s within 1000.',
       'Multiplying within 100 (3.OA.C.7*) and finding the unknown number in a multiplication equation (3.OA.A.4) make the first machines and one-sided scales.',
@@ -43,7 +43,7 @@ export const BANDS = [
     color: 'var(--sky)',
     grades: 'Grades 4–5 (US) · Years 4–5 (England)',
     focus: 'Patterns from a rule that don’t start at zero, tables up to 12 × 12, two-step machines, mirror lines in any direction, square and cube numbers.',
-    settings: { hearts: 3, hintCost: 5, timer: true, speedBonus: true, options: 4, readAloud: false, stars: [0, 1] },
+    settings: { hearts: 3, hintCost: 0, timer: true, speedBonus: true, options: 4, readAloud: false, stars: [0, 1] },
     why: [
       'Common Core 4.OA.C.5 asks pupils to generate a number or shape pattern from a given rule and notice features the rule doesn’t state, which is why these patterns start mid-way.',
       'England’s Year 4 covers multiples of 6, 7, 9, 25 and 1000, all tables up to 12 × 12, and completing symmetric figures in different orientations (Common Core 4.G.A.3).',
@@ -59,7 +59,7 @@ export const BANDS = [
     color: 'var(--lilac)',
     grades: 'Grades 6–7 (US) · Years 6–7 (England)',
     focus: 'Linear sequences and the nth term, solving equations on a balance, working backwards through a rule, triangular numbers. Stretch world: doubling and Fibonacci.',
-    settings: { hearts: 3, hintCost: 5, timer: true, speedBonus: true, options: 4, readAloud: false, stars: [0, 1] },
+    settings: { hearts: 3, hintCost: 0, timer: true, speedBonus: true, options: 4, readAloud: false, stars: [0, 1] },
     why: [
       'England’s Year 6 asks pupils to generate and describe linear number sequences and express missing-number problems algebraically. Key Stage 3 adds finding the nth term.',
       'Balance scales model equations: x + p = q and px = q in Common Core 6.EE.B.7*, px + q = r in 7.EE.B.4*. Unknowns on both sides (8.EE.C.7*) are the hardest scales, saved for the end.',

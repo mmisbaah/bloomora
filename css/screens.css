@@ -352,6 +352,7 @@
 .stage-head { flex: none; }
 .prompt { font-size: var(--step-2); }
 .puzzle { flex: 1; min-height: 0; position: relative; overflow: hidden; }
+.puzzle.puzzle--scroll { overflow-y: auto; overscroll-behavior: contain; scrollbar-gutter: stable; }
 .fit { display: flex; flex-direction: column; gap: 14px; transform-origin: top center; }
 .sprig-bar { flex: none; gap: 12px; }
 .speech { padding: 10px 14px; }
@@ -551,6 +552,14 @@
   100% { filter: none; transform: scale(1); }
 }
 .wake-note { color: var(--mist); font-size: var(--step--1); }
+.lagoon-restoration { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.lagoon-restoration svg { width: min(50%, 240px); height: 48px; flex: none; }
+.restoration-label, .friend-reply, .settings-note { font-size: var(--step--1); color: var(--mist); }
+.friend-reply:empty { display: none; }
+.friend-wave { animation: friendWave .8s ease-in-out; }
+@keyframes friendWave { 25%, 75% { transform: rotate(-10deg); } 50% { transform: rotate(10deg) translateY(-8px); } }
+@media (prefers-reduced-motion: reduce) { .friend-wave { animation: none; } }
+@media (max-height: 640px) and (min-width: 640px) { .lagoon-restoration { grid-column: 1; grid-row: 3; } .lagoon-restoration svg { height: 30px; } .restoration-label { font-size: .8rem; } }
 @media (prefers-reduced-motion: reduce) {
   .chapter-friend.sleeping, .chapter-friend .zzz, .chapter-friend.waking { animation: none; }
 }

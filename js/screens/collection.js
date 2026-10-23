@@ -6,16 +6,30 @@ import { settingsButton } from '../ui/settings.js';
 import { pager } from '../ui/pager.js';
 import { toast } from '../core/fx.js';
 import { pic } from '../ui/art.js';
+import { audio } from '../core/audio.js';
+import { t } from '../core/i18n.js';
 
 function critterCard(w) {
   const recs = w.levels.map(l => S.levelRecord(l.id));
   const cleared = recs.every(Boolean);
   const perfect = cleared && recs.every(r => r.stars === 3);
+  let visits = 0;
+  const reply = h('p', { class: 'friend-reply', role: 'status' });
+  const portrait = h('div', { class: 'critter-emoji' }, pic(w.reward.emoji));
   return h('article', { class: `critter panel${cleared ? '' : ' locked'}${perfect ? ' gold' : ''}` },
-    h('div', { class: 'critter-emoji' }, pic(w.reward.emoji)),
+    portrait,
     h('h3', {}, cleared ? w.reward.name : 'Still hiding'),
     h('p', {}, cleared ? w.reward.line : `Clear ${w.name} to meet this friend.`),
-    perfect ? h('span', { class: 'badge' }, 'Golden') : null);
+    perfect ? h('span', { class: 'badge' }, 'Golden') : null,
+    cleared ? h('button', { class: 'btn btn--small btn--ghost', onclick: () => {
+      visits++;
+      audio.bubble();
+      portrait.classList.remove('friend-wave');
+      void portrait.offsetWidth;
+      portrait.classList.add('friend-wave');
+      reply.textContent = visits % 2 ? `${w.reward.name}: ${w.reward.line}` : t('Your patterns brought my home back to life. Thank you!');
+    } }, t('Say hello')) : null,
+    reply);
 }
 
 export function collectionScreen(app, _params, nav) {

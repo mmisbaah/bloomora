@@ -65,10 +65,17 @@ export function openSettings({ onLeave, onShowMe, onGuide } = {}) {
       applyTextSize();
       return big;
     }),
+    toggleRow(`🌿 ${t('Relaxed mode')}`, !!st.relaxed, () => {
+      const on = !S.getState().relaxed;
+      S.setPref('relaxed', on);
+      window.dispatchEvent(new Event('bloomora:play-options'));
+      return on;
+    }),
     langRow(),
   ];
   openOverlay(h('div', { class: 'modal panel pop-in settings' },
     h('h2', {}, t('Settings')),
+    h('p', { class: 'settings-note' }, t('Relaxed mode removes hearts and the clock. Help is always free.')),
     h('div', { class: 'settings-rows' }, rows),
     h('div', { class: 'modal-actions' },
       onGuide ? h('button', { class: 'btn btn--ghost btn--small', onclick: () => { closeOverlay(); onGuide(); } }, `ℹ️ ${t('For grown-ups')}`) : null,

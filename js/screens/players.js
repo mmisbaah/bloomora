@@ -74,6 +74,7 @@ export function playersScreen(app, _params, nav) {
       h('button', { class: 'icon-btn', 'aria-label': 'Back to title', onclick: nav.title }, '←'),
       h('div', { class: 'top-bar-title' }, h('h1', {}, 'Who’s playing?')),
       settingsButton()),
+    h('p', { class: 'guide-meta' }, 'Saves stay in this browser. Back up or move a player using For grown-ups → Share & class.'),
     pages.el));
   pages.layout();
 }

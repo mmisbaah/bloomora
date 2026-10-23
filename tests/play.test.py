@@ -13,7 +13,7 @@ WORKERS = 6
 
 MEASURE = """()=>{const p=document.querySelector('.puzzle'), fit=p.querySelector('.fit'), de=document.documentElement;
   const m=+((fit.style.transform.match(/scale\\(([\\d.]+)\\)/)||[0,1])[1]);
-  return {scale:m, hidden: +getComputedStyle(fit).opacity < 0.9, over: de.scrollWidth>innerWidth+1 || de.scrollHeight>innerHeight+1 || fit.offsetHeight*m>p.clientHeight+2};}"""
+  return {scale:m, hidden: +getComputedStyle(fit).opacity < 0.9, over: de.scrollWidth>innerWidth+1 || de.scrollHeight>innerHeight+1 || (!p.classList.contains('puzzle--scroll') && fit.offsetHeight*m>p.clientHeight+2)};}"""
 
 async def level_list(page):
     return await page.evaluate("""(async()=>{const m=await import('./js/data/worlds.js');
@@ -32,6 +32,8 @@ async def play(page, band, wid, idx, lang):
     while time.time() - start < 90:
         await page.wait_for_timeout(250)
         state = await page.evaluate("""()=>{
+          const reason=document.querySelector('.reasoning-check');
+          if(reason) { reason.querySelector('[data-reason-correct="true"]').click(); [...reason.querySelectorAll('button')].find(b=>!b.hidden&&b.classList.contains('btn')&&!b.classList.contains('btn--ghost')).click(); return {}; }
           const ov=document.querySelector('.overlay .stars-big'); if(ov) return {done:[...ov.querySelectorAll('.star.on')].length};
           if(document.querySelector('.overlay')) return {fail:document.querySelector('.overlay').innerText.slice(0,80)};
           const p=document.querySelector('.puzzle'); const r=p&&p.bloomoraRound; if(!r) return {};

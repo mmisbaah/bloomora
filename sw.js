@@ -1,7 +1,7 @@
 // Offline support: the first visit saves every game file, so later visits work without internet.
 // Bump VERSION whenever files change so players get the new ones. tests/offline.test.mjs checks
 // that FILES lists everything the game loads.
-const VERSION = 'bloomora-v6';
+const VERSION = 'bloomora-v10';
 const FILES = [
   './',
   'index.html',
@@ -16,6 +16,10 @@ const FILES = [
   'js/core/fx.js',
   'js/core/generate.js',
   'js/core/guess.js',
+  'js/core/learning.js',
+  'js/core/reasoning.js',
+  'js/core/skills.js',
+  'js/core/practice.js',
   'js/core/i18n.js',
   'js/core/numpad.js',
   'js/core/render.js',
@@ -23,6 +27,7 @@ const FILES = [
   'js/core/share.js',
   'js/core/speech.js',
   'js/core/state.js',
+  'js/core/save.js',
   'js/data/bands.js',
   'js/data/cando.js',
   'js/data/shop.js',
@@ -56,6 +61,7 @@ const FILES = [
   'js/screens/shop.js',
   'js/screens/title.js',
   'js/ui/art.js',
+  'js/ui/lagoon.js',
   'js/ui/pager.js',
   'js/ui/settings.js',
   'js/ui/tutorial.js',

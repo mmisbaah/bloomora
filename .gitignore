@@ -2,3 +2,7 @@
 node_modules/
 *.log
 .scratch/
+dist/
+.wrangler/
+live-*.png
+test-artifacts/

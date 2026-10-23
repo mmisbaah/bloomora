@@ -10,6 +10,7 @@ import { settingsButton } from '../ui/settings.js';
 import { pager } from '../ui/pager.js';
 import { pic } from '../ui/art.js';
 import { t } from '../core/i18n.js';
+import { lagoonScene } from '../ui/lagoon.js';
 
 // Set by the play screen when a level is cleared, so the map can show Sprig swimming onward.
 let lastClear = null;
@@ -93,6 +94,7 @@ function worldCard(w, nav) {
         h('h2', {}, w.name)),
       h('div', { class: 'world-stars' }, `${got}/${w.levels.length * 3} ★`)),
     h('div', { class: 'trail-box' }, trail, nodes, marker),
+    lagoonScene(recs.filter(Boolean).length, n),
     h('div', { class: 'world-next' }, nextIdx === -1 ? t('Every level cleared!') : t('Next: {name}', { name: w.levels[nextIdx].name })),
     h('div', { class: 'world-foot' }, types.map(t => h('span', { class: 'chip' }, PUZZLES[t].name))));
 }
@@ -103,7 +105,7 @@ function bossCard(boss, band, nav, stars) {
   const need = bossThreshold(band.id);
   const open = stars >= need;
   const pct = Math.min(100, Math.round((stars / need) * 100));
-  const timed = band.settings.timer && level.timeLimit;
+  const timed = !S.getState().relaxed && band.settings.timer && level.timeLimit;
   return h('article', { class: 'world-card boss-card panel', style: { '--w': boss.color } },
     h('div', { class: 'crest', 'aria-hidden': 'true' }, boss.crest),
     h('div', { class: 'boss-body' },

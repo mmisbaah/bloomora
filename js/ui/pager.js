@@ -7,7 +7,7 @@ import { t } from '../core/i18n.js';
 export function pager(items, { className = '', label = 'Page' } = {}) {
   const list = h('div', { class: `pager-list ${className}` });
   const prev = h('button', { class: 'pager-btn', 'aria-label': `Previous ${label.toLowerCase()}`, onclick: () => go(page - 1) }, '‹');
-  // The next button says "More" and bobs until the child has turned a page, so the extra
+  // The next button says "More" and glows until the child has turned a page, so the extra
   // pages don't go unnoticed. It also says how many more items are waiting.
   const moreCount = h('span', { class: 'pager-more' });
   const next = h('button', { class: 'pager-btn pager-next', 'aria-label': `Next ${label.toLowerCase()}`, onclick: () => go(page + 1) }, moreCount, '›');

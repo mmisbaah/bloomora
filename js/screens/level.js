@@ -19,12 +19,15 @@ import { showResults, showFail, showFreeResults, showSimpleResults } from './res
 import { noteCleared, noteWorldDone } from './map.js';
 import { pic } from '../ui/art.js';
 import { t, isArabic, AR_PRAISE } from '../core/i18n.js';
+import { workedExample, guideRound } from '../core/learning.js';
+import { reasoningCheck } from '../core/reasoning.js';
+import { practiceTemplates } from '../core/practice.js';
 
 const PRAISE = ['Splash-tastic!', 'You cracked it!', 'The lagoon glows brighter!', 'Sharp eyes!', 'Pattern found!', 'Sprig is impressed!'];
 const fmtTime = s => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
 const FREE_ROUNDS = 200;
 const DAILY_ROUNDS = 6;
-const PRACTICE_ROUNDS = 6;
+const PRACTICE_ROUNDS = 3;
 
 // Small string hash so every player in a band gets the same Daily Dive on the same day.
 function hashSeed(text) {
@@ -77,10 +80,12 @@ function buildSession(params) {
       level: { id: `daily-${bandId}`, name: 'Daily Dive', intro: 'Today’s six puzzles are the same for every diver in your group. Can you keep your streak going?' },
     };
   }
-  const due = S.dueReviews(bandId).map(r => templateFor(r.src)).filter(Boolean);
+  const state = S.getState();
+  const practiceRng = makeRng();
+  const practice = practiceTemplates(S.dueReviews(bandId), templateFor, byLevel, state.levels, state.objectives, practiceRng, PRACTICE_ROUNDS);
   return {
-    mode: 'practice', world, band: bandId, rng: makeRng(), adaptive: true,
-    templates: due.slice(0, PRACTICE_ROUNDS),
+    mode: 'practice', world, band: bandId, rng: practiceRng, adaptive: true,
+    templates: practice,
     level: { id: `practice-${bandId}`, name: 'Practice Pool', intro: 'These are puzzles that tripped you up before, with new numbers. Let’s make them easy!' },
   };
 }
@@ -93,8 +98,7 @@ export function levelScreen(app, params, nav) {
   const cfg = findBand(session.band).settings;
   // Minnows have no hearts in levels: they can keep trying. Free Dive still needs an end, so it gets 5.
   const HEARTS = cfg.hearts || (endless ? 5 : 0);
-  const unlimited = HEARTS === 0;
-  const HINT_COST = cfg.hintCost;
+  let unlimited = HEARTS === 0 || !!S.getState().relaxed;
   const timeLimit = cfg.timer && mode === 'level' ? level.timeLimit || 0 : 0;
   const retry = () => (mode === 'level' ? nav.level(params.worldId, params.levelIndex) : nav[mode](session.band));
   const dueSet = new Set(S.dueReviews(session.band).map(r => r.src));
@@ -106,6 +110,8 @@ export function levelScreen(app, params, nav) {
   let ease = 0, roughRounds = 0, cleanRounds = 0, easeNote = '';
   let api = null, round = null, P = null, puzzleCleanup = null, clock = null, whyBox = null, stopHand = null;
   let timeLeft = timeLimit;
+  let usedRelaxed = !!S.getState().relaxed, activeSeconds = 0, lastTick = 0, solved = 0, reflecting = false;
+  let stopGuide = null, helpBox = null, assisted = false;
   const timers = new Set();
   const later = (fn, ms) => {
     const t = setTimeout(() => { timers.delete(t); fn(); }, ms);
@@ -114,14 +120,14 @@ export function levelScreen(app, params, nav) {
 
   // HUD
   const heartEls = Array.from({ length: HEARTS }, () => h('span', { class: 'heart' }, '❤️'));
-  const heartsEl = unlimited ? null : h('div', { class: 'hearts', role: 'img', 'aria-label': `${HEARTS} hearts left` }, heartEls);
+  const heartsEl = h('div', { class: 'hearts', hidden: unlimited, role: 'img', 'aria-label': `${HEARTS} hearts left` }, heartEls);
   const dotsEl = endless
     ? h('div', { class: 'stat' }, h('span', { class: 'stat-label' }, t('Depth')), h('span', { class: 'depth' }, '0'))
     : h('div', { class: 'round-dots', 'aria-hidden': 'true' }, Array.from({ length: total }, () => h('span')));
   const scoreEl = h('span', {}, '0');
   const pearlEl = h('span', {}, S.getState().pearls);
   const timeEl = h('span', {}, fmtTime(timeLeft));
-  const timerStat = timeLimit ? h('div', { class: 'stat timer', 'aria-label': 'Time left' }, '⏱ ', timeEl) : null;
+  const timerStat = timeLimit ? h('div', { class: 'stat timer', hidden: !!S.getState().relaxed, 'aria-label': 'Time left' }, '⏱ ', timeEl) : null;
   const title = mode === 'level' ? `${world.name} · ${world.num}-${params.levelIndex + 1}` : `${world.name} · ${level.name}`;
 
   const hud = h('header', { class: 'hud panel' },
@@ -131,6 +137,7 @@ export function levelScreen(app, params, nav) {
     timerStat,
     h('div', { class: 'stat' }, h('span', { class: 'stat-label' }, t('Score')), scoreEl),
     h('div', { class: 'stat' }, h('i', { class: 'pearl' }), pearlEl),
+    endless ? h('button', { class: 'btn btn--small btn--ghost', onclick: () => { if (!ended && started) finishEndless(); } }, t('End dive')) : null,
     settingsButton({ onLeave: askQuit, onShowMe: () => showMeHow(true) }));
 
   const eyebrow = h('div', { class: 'eyebrow' });
@@ -141,9 +148,22 @@ export function levelScreen(app, params, nav) {
   const fitBox = h('div', { class: 'fit' });
   puzzleRoot.append(fitBox);
   const fit = () => {
+    if (!puzzleRoot.isConnected || !puzzleRoot.clientWidth || !puzzleRoot.clientHeight) return;
     fitBox.style.transform = '';
     const s = Math.min(1, puzzleRoot.clientHeight / fitBox.offsetHeight, puzzleRoot.clientWidth / fitBox.scrollWidth);
-    if (s < 1) fitBox.style.transform = `scale(${Math.max(0.5, s)})`;
+    // Very tall explanations keep full-size controls and scroll instead of being clipped.
+    const scroll = s < 0.5;
+    puzzleRoot.classList.toggle('puzzle--scroll', scroll);
+    if (scroll) {
+      puzzleRoot.setAttribute('tabindex', '0');
+      puzzleRoot.setAttribute('role', 'region');
+      puzzleRoot.setAttribute('aria-label', t('Puzzle; scroll for more'));
+    } else {
+      puzzleRoot.removeAttribute('tabindex');
+      puzzleRoot.removeAttribute('role');
+      puzzleRoot.removeAttribute('aria-label');
+      if (s < 1) fitBox.style.transform = `scale(${s})`;
+    }
   };
   const fitWatch = new ResizeObserver(() => requestAnimationFrame(fit));
   fitWatch.observe(fitBox);
@@ -183,8 +203,20 @@ export function levelScreen(app, params, nav) {
 
   function drawHintBtn() {
     hintBtn.hidden = false;
-    hintBtn.textContent = hintStage === 0 ? (HINT_COST ? t('Hint · {n} pearls', { n: HINT_COST }) : t('Hint')) : t('More help');
+    hintBtn.textContent = t(['Clue · free', 'Worked example', 'Guide me', 'Guidance on'][hintStage]);
+    hintBtn.disabled = hintStage >= 3;
   }
+
+  function applyPlayOptions() {
+    const relaxed = !!S.getState().relaxed;
+    usedRelaxed ||= relaxed;
+    unlimited = HEARTS === 0 || relaxed;
+    heartsEl.hidden = unlimited;
+    if (timerStat) timerStat.hidden = relaxed;
+  }
+  window.addEventListener('bloomora:play-options', applyPlayOptions);
+  const resetTick = () => { lastTick = performance.now(); };
+  document.addEventListener('visibilitychange', resetTick);
 
   // ---- Intro ----
   function showIntro() {
@@ -220,7 +252,7 @@ export function levelScreen(app, params, nav) {
       free: `${lives} · ${t('puzzles get harder the deeper you go')}`,
       daily: `${puzzles} · ${lives} · ${t('streak: {n} days', { n: days })}`,
       practice: `${puzzles} · ${lives} · ${t('new numbers every time')}`,
-      level: timeLimit
+      level: timeLimit && !S.getState().relaxed
         ? `${puzzles} · ${lives} · ${t('{t} on the tide clock', { t: fmtTime(timeLimit) })}`
         : `${puzzles} · ${lives} · ${starRule}`,
     }[mode];
@@ -240,23 +272,31 @@ export function levelScreen(app, params, nav) {
   function begin() {
     audio.tap();
     started = performance.now();
-    if (timeLimit) {
-      clock = setInterval(() => {
-        if (ended) return;
-        timeLeft--;
-        timeEl.textContent = fmtTime(Math.max(0, timeLeft));
-        timerStat.classList.toggle('low', timeLeft <= 20);
-        if (timeLeft <= 0) {
+    lastTick = performance.now();
+    clock = setInterval(() => {
+        const now = performance.now(), delta = (now - lastTick) / 1000;
+        lastTick = now;
+        if (ended || reflecting || document.hidden || document.querySelector('.overlay') || stopHand) return;
+        activeSeconds += delta;
+        if (timeLimit && !S.getState().relaxed) {
+          timeLeft = Math.max(0, timeLeft - delta);
+          timeEl.textContent = fmtTime(Math.ceil(timeLeft));
+          timerStat.classList.toggle('low', timeLeft <= 20);
+        }
+        if (timeLimit && !S.getState().relaxed && timeLeft <= 0) {
           if (api) api.locked = true;
           fail(t('The tide went out before you finished. Try to move a little faster!'));
         }
-      }, 1000);
-    }
+      }, 250);
     runRound();
   }
 
   // ---- Rounds ----
   function runRound() {
+    stopGuide?.();
+    stopGuide = null;
+    helpBox = null;
+    assisted = false;
     const template = endless ? session.next(idx) : session.templates[idx];
     const e = session.adaptive ? ease : 0;
     round = { ...vary(template, rng, session.band, { ease: e }), optionCount: Math.max(2, cfg.options - (e < 0 ? 1 : 0)) };
@@ -272,6 +312,7 @@ export function levelScreen(app, params, nav) {
     promptEl.textContent = puzzlePrompt(P, round);
     fitBox.replaceChildren();
     puzzleRoot.className = `puzzle puzzle--${P.id}`;
+    puzzleRoot.scrollTop = 0;
     fitBox.classList.remove('swim-out'); // otherwise the last puzzle's fade-out keeps this one invisible
     replay(fitBox, 'swim-in');
     puzzleRoot.bloomoraRound = round; // lets automated tests read the generated round
@@ -285,6 +326,7 @@ export function levelScreen(app, params, nav) {
       whyBox?.remove();
       whyBox = el;
       fitBox.append(el);
+      fit();
     };
     api = a;
     puzzleCleanup = P.mount(fitBox, round, a) || null;
@@ -326,24 +368,42 @@ export function levelScreen(app, params, nav) {
   function onCorrect(a, note) {
     if (a.locked || ended) return;
     a.locked = true;
+    solved++;
     audio.correct();
-    if (!roundMistake) S.recordSkill(round.type, true);
-    if (roundMistake) S.recordMiss(round.src, session.band);
-    else if (dueSet.has(round.src)) S.recordReviewSuccess(round.src);
+    const reviewSrc = round.reviewSrc || round.src;
+    if (!roundMistake) {
+      S.recordSkill(round.type, true);
+      S.recordLearning(round, { right: true, assisted });
+    }
+    if (roundMistake || assisted) S.recordMiss(reviewSrc, session.band);
+    else if (dueSet.has(reviewSrc)) { S.recordReviewSuccess(reviewSrc); dueSet.delete(reviewSrc); }
     updateEase();
-    streak = roundMistake ? 0 : streak + 1;
+    streak = roundMistake || assisted ? 0 : streak + 1;
     const pts = 100 + (streak > 1 ? (streak - 1) * 25 : 0);
     score += pts;
     scoreEl.textContent = score;
     floatText(streak > 1 ? `+${pts}  combo ×${streak}` : `+${pts}`, stage);
     // Puzzle feedback notes are English-only, so other languages get praise on its own.
     say(isArabic() ? pick(AR_PRAISE) : note ? `${pick(PRAISE)} ${note}` : pick(PRAISE), 'good');
-    later(nextRound, whyBox ? 2200 : 1500);
+    later(() => {
+      const sequencePuzzle = ['build', 'predict', 'missing', 'oddOne', 'rule', 'story', 'table'].includes(round.type);
+      const canReflect = mode === 'level' && sequencePuzzle && session.band !== 'minnows' && (idx + 1) % 3 === 0 && round.seq && !round.seq.format && ['arith', 'geo', 'square', 'tri', 'fib'].includes(round.seq.kind);
+      if (!canReflect) { nextRound(); return; }
+      puzzleCleanup?.(); puzzleCleanup = null;
+      stopGuide?.(); stopGuide = null;
+      stopHand?.(); stopHand = null;
+      reflecting = true;
+      hintBtn.hidden = true;
+      reasoningCheck(fitBox, round, { say,
+        onDone: () => { if (!reflecting || ended) return; reflecting = false; nextRound(); },
+        onAnswer: right => S.recordReasoning(round, right),
+      });
+    }, whyBox ? 2200 : 1500);
   }
 
   function updateEase() {
     if (!session.adaptive) return;
-    if (roundMistake) { roughRounds++; cleanRounds = 0; } else { cleanRounds++; roughRounds = 0; }
+    if (roundMistake || assisted) { roughRounds++; cleanRounds = 0; } else { cleanRounds++; roughRounds = 0; }
     if (roughRounds >= 2 && ease > -1) {
       ease--;
       roughRounds = 0;
@@ -358,17 +418,23 @@ export function levelScreen(app, params, nav) {
   function onWrong(a, note) {
     if (a.locked || ended) return;
     audio.wrong();
-    if (!roundMistake) S.recordSkill(round.type, false);
-    if (!unlimited) hearts--;
-    mistakes++;
+    const firstMiss = !roundMistake;
+    if (firstMiss) {
+      S.recordSkill(round.type, false);
+      S.recordLearning(round, { right: false, assisted });
+      S.recordMiss(round.reviewSrc || round.src, session.band);
+      if (!unlimited) hearts--;
+      mistakes++;
+    }
     roundMistake = true;
     streak = 0;
     replay(stage, 'shake');
-    drawHearts(true);
-    say(isArabic() || !note ? t('Not quite. Look again!') : note, 'bad');
+    drawHearts(firstMiss && !unlimited);
+    const feedback = isArabic() || !note ? t('Not quite. Look again!') : note;
+    say(`${feedback} ${t('Take your time. Corrections on this puzzle cost no more hearts.')}`, 'bad');
     if (!unlimited && hearts <= 0) {
       a.locked = true;
-      S.recordMiss(round.src, session.band);
+      S.recordMiss(round.reviewSrc || round.src, session.band);
       later(() => (endless ? finishEndless() : fail(t('Out of hearts! The tide carried your shells away.'))), 1000);
     }
   }
@@ -409,9 +475,10 @@ export function levelScreen(app, params, nav) {
 
   function finish() {
     wrapUp();
-    const secs = (performance.now() - started) / 1000;
+    const secs = activeSeconds;
     const par = level.par || total * 35;
-    const timeBonus = cfg.speedBonus ? Math.max(0, Math.round((par - secs) * 5)) : 0;
+    const speedBonus = cfg.speedBonus && !usedRelaxed;
+    const timeBonus = speedBonus ? Math.max(0, Math.round((par - secs) * 5)) : 0;
     const stars = mistakes <= cfg.stars[0] ? 3 : mistakes <= cfg.stars[1] ? 2 : 1;
     const totalScore = score + timeBonus;
     const wasDone = world.levels.every(l => S.levelRecord(l.id));
@@ -425,10 +492,11 @@ export function levelScreen(app, params, nav) {
     const young = session.band === 'minnows' || session.band === 'turtles';
     showResults({
       can: CAN_DO[level.id], young,
-      levelName: level.name, stars, score, timeBonus, secs, speedBonus: cfg.speedBonus, starRule: cfg.stars, total: totalScore, pearls, newBest: rec.newBest,
+      levelName: level.name, stars, score, timeBonus, secs, speedBonus, starRule: cfg.stars, total: totalScore, pearls, newBest: rec.newBest,
       onRetry: retry,
       onMap: nav.map,
       onNext: next !== null ? () => nav.level(params.worldId, next) : null,
+      onMake: nav.maker,
     });
   }
 
@@ -454,7 +522,7 @@ export function levelScreen(app, params, nav) {
     const left = S.dueReviews(session.band).length;
     showSimpleResults({
       eyebrow: 'Practice done', title: mistakes ? 'Getting stronger!' : 'Nailed it!',
-      text: left ? `${left} puzzle${left === 1 ? '' : 's'} still want more practice. They’ll come back soon.` : 'Every tricky puzzle is cleared for now.',
+      text: left ? `Good work. Take a break! ${left} puzzle${left === 1 ? '' : 's'} still want more practice when you return.` : 'Every tricky puzzle is cleared for now. Take a break and come back later!',
       rows: [['Puzzles', total], ['Mistakes', mistakes], ['Pearls found', `+${pearls}`]],
       onRetry: left ? retry : null, onMap: nav.map,
     });
@@ -463,17 +531,18 @@ export function levelScreen(app, params, nav) {
   function finishEndless() {
     if (ended) return;
     ended = true;
+    stopClock();
     puzzleCleanup?.();
     puzzleCleanup = null;
     hintBtn.hidden = true;
     const prev = S.freeBest(session.band);
-    const isRecord = S.recordFreeDive(session.band, idx, score);
-    const pearls = Math.min(30, idx * 2);
+    const isRecord = S.recordFreeDive(session.band, solved, score);
+    const pearls = Math.min(30, solved * 2);
     S.addPearls(pearls);
     pearlEl.textContent = S.getState().pearls;
     audio.bloom();
-    if (idx > 0) confetti();
-    showFreeResults({ depth: idx, score, pearls, isRecord, prev, onRetry: retry, onMap: nav.map });
+    if (solved > 0) confetti();
+    showFreeResults({ depth: solved, score, pearls, isRecord, prev, onRetry: retry, onMap: nav.map });
   }
 
   function fail(reason) {
@@ -486,23 +555,26 @@ export function levelScreen(app, params, nav) {
     showFail({ reason, onRetry: retry, onMap: nav.map });
   }
 
-  // Two-step hints: first a gentle nudge (paid for in pearls in older bands), then the full hint free.
+  // Help is always free. The child still makes every final move.
   function useHint() {
     if (!api || api.locked || ended) return;
+    assisted = true;
     if (hintStage === 0) {
-      if (HINT_COST && !S.spendPearls(HINT_COST)) {
-        toast(t('A hint costs {n} pearls. Clear levels to find more.', { n: HINT_COST }));
-        return;
-      }
-      if (HINT_COST) audio.coin();
-      pearlEl.textContent = S.getState().pearls;
       hintStage = 1;
-      say(isArabic() ? t('Find the jump between two numbers, then keep going.') : P.nudge ? P.nudge(round) : P.hint(round), 'hint');
-    } else {
+      say(isArabic() ? howText(P.id) : P.nudge ? P.nudge(round) : P.hint(round), 'hint');
+    } else if (hintStage === 1) {
       hintStage = 2;
-      say(isArabic() ? howText(P.id) : P.hint(round), 'hint');
+      helpBox = workedExample(round);
+      fitBox.append(helpBox);
+      say(t('Try this example, then return to your puzzle.'), 'hint');
+    } else if (hintStage === 2) {
+      hintStage = 3;
+      helpBox?.remove();
+      stopGuide = guideRound(fitBox, round);
+      say(t('Follow the outlined step, then check your answer.'), 'hint');
     }
     drawHintBtn();
+    fit();
   }
 
   function askQuit() {
@@ -528,7 +600,10 @@ export function levelScreen(app, params, nav) {
     stopHand?.();
     puzzleCleanup?.();
     stopSpeaking();
+    stopGuide?.();
     fitWatch.disconnect();
+    window.removeEventListener('bloomora:play-options', applyPlayOptions);
+    document.removeEventListener('visibilitychange', resetTick);
     document.removeEventListener('keydown', onKey);
     closeOverlay();
   };

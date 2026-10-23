@@ -2,6 +2,7 @@
 import { h } from '../core/dom.js';
 import { audio } from '../core/audio.js';
 import { t } from '../core/i18n.js';
+import { why } from '../core/explain.js';
 
 export default {
   id: 'mirror',
@@ -82,6 +83,8 @@ export default {
         cell.classList.add('example');
         setTimeout(() => cell.classList.remove('example'), 2500);
         api.showWhy(why('Here’s one you missed (it’s glowing). It’s the same number of steps from the line as its partner.'));
+      } else {
+        api.showWhy(why(t('Remove the marked tiles. A reflection has exactly the same filled tiles on both sides.')));
       }
     }
 

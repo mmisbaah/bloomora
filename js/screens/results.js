@@ -24,6 +24,7 @@ export function showResults(o) {
     stars,
     o.can && !isArabic() ? h('p', { class: 'can-do' }, `You can ${o.can.replace(/!$/, '')}!`) : null,
     h('p', {}, starLine(o.stars, o.starRule)),
+    o.onMake ? h('button', { class: 'btn btn--ghost btn--small', onclick: act(o.onMake) }, t('Create your own pattern')) : null,
     // Points mean little to a five-year-old, so the younger bands just see the pearls they found.
     o.young
       ? h('p', { class: 'pearl-line' }, h('i', { class: 'pearl' }), ` ${t('+{n} pearls', { n: o.pearls })}`)
