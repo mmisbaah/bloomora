@@ -9,6 +9,7 @@ export const LANGS = [
 ];
 
 const AR = {
+  'Puzzle; scroll for more': 'اللغز؛ مرر لرؤية المزيد',
   'Clue · free': 'تلميح · مجاني', 'Worked example': 'مثال محلول', 'Guide me': 'أرشدني', 'Guidance on': 'الإرشاد مفعّل',
   'Relaxed mode': 'الوضع المريح', 'End dive': 'إنهاء الغوص',
   'Relaxed mode removes hearts and the clock. Help is always free.': 'الوضع المريح يزيل القلوب والساعة. المساعدة مجانية دائماً.',

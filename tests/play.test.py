@@ -13,7 +13,7 @@ WORKERS = 6
 
 MEASURE = """()=>{const p=document.querySelector('.puzzle'), fit=p.querySelector('.fit'), de=document.documentElement;
   const m=+((fit.style.transform.match(/scale\\(([\\d.]+)\\)/)||[0,1])[1]);
-  return {scale:m, hidden: +getComputedStyle(fit).opacity < 0.9, over: de.scrollWidth>innerWidth+1 || de.scrollHeight>innerHeight+1 || fit.offsetHeight*m>p.clientHeight+2};}"""
+  return {scale:m, hidden: +getComputedStyle(fit).opacity < 0.9, over: de.scrollWidth>innerWidth+1 || de.scrollHeight>innerHeight+1 || (!p.classList.contains('puzzle--scroll') && fit.offsetHeight*m>p.clientHeight+2)};}"""
 
 async def level_list(page):
     return await page.evaluate("""(async()=>{const m=await import('./js/data/worlds.js');

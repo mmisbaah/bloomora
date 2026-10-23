@@ -151,7 +151,19 @@ export function levelScreen(app, params, nav) {
     if (!puzzleRoot.isConnected || !puzzleRoot.clientWidth || !puzzleRoot.clientHeight) return;
     fitBox.style.transform = '';
     const s = Math.min(1, puzzleRoot.clientHeight / fitBox.offsetHeight, puzzleRoot.clientWidth / fitBox.scrollWidth);
-    if (s < 1) fitBox.style.transform = `scale(${Math.max(0.5, s)})`;
+    // Very tall explanations keep full-size controls and scroll instead of being clipped.
+    const scroll = s < 0.5;
+    puzzleRoot.classList.toggle('puzzle--scroll', scroll);
+    if (scroll) {
+      puzzleRoot.setAttribute('tabindex', '0');
+      puzzleRoot.setAttribute('role', 'region');
+      puzzleRoot.setAttribute('aria-label', t('Puzzle; scroll for more'));
+    } else {
+      puzzleRoot.removeAttribute('tabindex');
+      puzzleRoot.removeAttribute('role');
+      puzzleRoot.removeAttribute('aria-label');
+      if (s < 1) fitBox.style.transform = `scale(${s})`;
+    }
   };
   const fitWatch = new ResizeObserver(() => requestAnimationFrame(fit));
   fitWatch.observe(fitBox);
@@ -300,6 +312,7 @@ export function levelScreen(app, params, nav) {
     promptEl.textContent = puzzlePrompt(P, round);
     fitBox.replaceChildren();
     puzzleRoot.className = `puzzle puzzle--${P.id}`;
+    puzzleRoot.scrollTop = 0;
     fitBox.classList.remove('swim-out'); // otherwise the last puzzle's fade-out keeps this one invisible
     replay(fitBox, 'swim-in');
     puzzleRoot.bloomoraRound = round; // lets automated tests read the generated round

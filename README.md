@@ -42,7 +42,7 @@ It also works as-is on GitHub Pages or any static host. Once it has loaded onlin
 - **Arabic.** The interface, puzzle prompts, hints, stories and Pattern Maker switch to Arabic with a right-to-left layout. Puzzle boards stay left-to-right so number patterns read in the direction the arrows point. Level names and intros are still English.
 - **Accessibility.** Right and wrong answers show ✓ and ✗ as well as colour. Keys 1–9 press answer buttons, the number pad takes typed numbers, and focus outlines show where you are. Big text is in Settings, and animations calm down when the device asks for reduced motion.
 - **Progress codes and a class view.** BLOOM2 backups include scores, pearls, wardrobe, dive records, daily history, practice queue, learning statistics and preferences. Older BLOOM1 summary codes still import. Paste codes in the grown-ups page to restore a player or compare a class.
-- **Fits any screen.** Nothing scrolls. Long screens page with big arrow buttons, and puzzles shrink to fit when they have to.
+- **Fits any screen.** Long menus page with big arrow buttons. Puzzles fit the available space; very tall explanations scroll to keep the controls readable.
 - **A guide for grown-ups** explaining which curriculum standard each level lines up with (US Common Core and England's national curriculum), with sources.
 
 Progress is saved in this browser's local storage. Clearing browser data can erase it; keep a progress code as a backup.

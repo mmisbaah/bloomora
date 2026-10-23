@@ -276,9 +276,12 @@ async function main() {
           await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
           const p=document.querySelector('.puzzle'),fit=p.querySelector('.fit');
           const scale=Number((fit.style.transform.match(/scale\(([\d.]+)\)/)||[0,1])[1]);
-          return {height:fit.offsetHeight*scale,room:p.clientHeight,width:fit.scrollWidth*scale,space:p.clientWidth};
+          const scroll=p.classList.contains('puzzle--scroll');
+          if(scroll) p.scrollTop=p.scrollHeight;
+          const example=fit.querySelector('.help-example').getBoundingClientRect(),box=p.getBoundingClientRect();
+          return {height:fit.offsetHeight*scale,room:p.clientHeight,width:fit.scrollWidth*scale,space:p.clientWidth,scroll,reachable:example.bottom<=box.bottom+2};
         });
-        assert.ok(size.height<=size.room+2 && size.width<=size.space+2, `${type} worked example fits ${width}x${height}: ${JSON.stringify(size)}`);
+        assert.ok((size.scroll ? size.reachable : size.height<=size.room+2) && size.width<=size.space+2, `${type} worked example fits ${width}x${height}: ${JSON.stringify(size)}`);
       }
     }
     console.log('PASS worked example layouts for all 15 types in portrait and landscape');

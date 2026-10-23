@@ -352,6 +352,7 @@
 .stage-head { flex: none; }
 .prompt { font-size: var(--step-2); }
 .puzzle { flex: 1; min-height: 0; position: relative; overflow: hidden; }
+.puzzle.puzzle--scroll { overflow-y: auto; overscroll-behavior: contain; scrollbar-gutter: stable; }
 .fit { display: flex; flex-direction: column; gap: 14px; transform-origin: top center; }
 .sprig-bar { flex: none; gap: 12px; }
 .speech { padding: 10px 14px; }
